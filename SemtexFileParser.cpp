@@ -15,24 +15,10 @@ void processSemtexFile(const std::string& file, bool isBaseFile, bool verbose, S
 
 	// TODO: Process file
 
-	// Make sure other threads have taken care of all our needed files before exiting.
-	bool dependenciesDone = true;
-	do {
-		if (!dependenciesDone) { // Don't wait the first time
-			// Otherwise, sleep some to give the threads time to work
-			std::this_thread::sleep_for(SemtexProcessorThread::dequeueTimeout * 2);
-		}
-
-		std::lock_guard<std::mutex> lock(generatedFilesMutex);
-		for (const auto& file : neededFiles) {
-			if (generatedFiles.find(file) == generatedFiles.end()) {
-				dependenciesDone = false;
-				break;
-			}
-		}
-	} while (!dependenciesDone);
-
 	if (isBaseFile) {
+		// Wait for all dependencies to finish being generated.
+		// This is true when all threads are not processing a file and there are no files in the queue.
+
 		// TODO: Run LaTeX
 	}
 }
