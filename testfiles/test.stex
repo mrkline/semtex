@@ -1,0 +1,19 @@
+\documentclass{article}
+\usepackage{fullpage}
+\usepackage{parskip}
+\usepackage{xfrac}
+\usepackage[fleqn]{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{cancel}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{pbox}
+\pagestyle{empty}
+\begin{document}
+\begin{center}
+SemTeX Test
+\end{center}
+
+%\include{features}
+\end{document}
