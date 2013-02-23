@@ -3,16 +3,16 @@
 #include <atomic>
 #include <thread>
 
-class SemtexFileQueue;
+class FileQueue;
 
 //! Processes files in an additional thread
-class SemtexProcessorThread {
+class ProcessorThread {
 public:
 	static const std::chrono::milliseconds dequeueTimeout;
 
 	//! Constructor
 	//! \param sfq Queue from which to pull files to process
-	SemtexProcessorThread(SemtexFileQueue& sfq);
+	ProcessorThread(FileQueue& sfq);
 
 	//! Closes the thread as soon as it is done processing 
 	void join();
@@ -20,7 +20,7 @@ public:
 private:
 	std::atomic_bool exit; //!< Raised by join
 	std::thread t;
-	SemtexFileQueue& queue;
+	FileQueue& queue;
 
 	void threadProc();
 };

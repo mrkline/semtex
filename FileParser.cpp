@@ -1,11 +1,11 @@
-#include "SemtexFileParser.hpp"
+#include "FileParser.hpp"
 
 #include <thread>
 
-#include "SemtexFileQueue.hpp"
-#include "SemtexProcessorThread.hpp"
+#include "FileQueue.hpp"
+#include "ProcessorThread.hpp"
 
-void processSemtexFile(const std::string& file, bool isBaseFile, bool verbose, SemtexFileQueue& sfq,
+void processFile(const std::string& file, bool isBaseFile, bool verbose, FileQueue& sfq,
                        std::unordered_set<std::string>& generatedFiles, std::mutex& generatedFilesMutex)
 {
 	if (verbose)

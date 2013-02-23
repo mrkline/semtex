@@ -1,6 +1,6 @@
 #pragma once
 
-class SemtexFileQueue;
+class FileQueue;
 
 #include <mutex>
 #include <string>
@@ -17,5 +17,5 @@ class SemtexFileQueue;
  *                       (to be deleted upon program completion, if the user so desires)
  * \param generatedFilesMutex The mutex to lock while accessing generatedFiles
  */
-void processSemtexFile(const std::string& filename, bool isBaseFile, bool verbose, SemtexFileQueue& sfq,
+void processFile(const std::string& filename, bool isBaseFile, bool verbose, FileQueue& sfq,
                        std::unordered_set<std::string>& generatedFiles, std::mutex& generatedFilesMutex);

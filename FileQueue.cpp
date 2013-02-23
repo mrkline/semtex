@@ -1,11 +1,11 @@
-#include "SemtexFileQueue.hpp"
+#include "FileQueue.hpp"
 
-SemtexFileQueue::SemtexFileQueue(SeveralCallback call)
+FileQueue::FileQueue(SeveralCallback call)
 	: cb(call)
 {
 }
 
-void SemtexFileQueue::enqueue(std::string&& filename)
+void FileQueue::enqueue(std::string&& filename)
 {
 	std::lock_guard<std::mutex> lock(qMutex);
 	q.push(std::forward<std::string>(filename));
@@ -17,7 +17,7 @@ void SemtexFileQueue::enqueue(std::string&& filename)
 	populatedNotifier.notify_one();
 }
 
-std::string SemtexFileQueue::dequeue(const std::chrono::milliseconds& timeout)
+std::string FileQueue::dequeue(const std::chrono::milliseconds& timeout)
 {
 	std::unique_lock<std::mutex> lock(qMutex);
 	if (q.empty()) {

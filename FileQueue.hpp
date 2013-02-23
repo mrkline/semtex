@@ -7,15 +7,15 @@
 #include <string>
 
 //! A thread-safe queue for tracking SemTeX files that need to be processed
-class SemtexFileQueue {
+class FileQueue {
 public:
 	//! Callback to issue if there is more than one file in the queue.
 	//! This is likely a good indication to use multi-threading.
-	typedef void (*SeveralCallback)(SemtexFileQueue& q);
+	typedef void (*SeveralCallback)(FileQueue& q);
 
 	//! Constructor
 	//! \param cb A callback to issue if there is more than one file in the queue.
-	SemtexFileQueue(SeveralCallback call);
+	FileQueue(SeveralCallback call);
 
 	//! Enqueue a file to be processed
 	void enqueue(std::string&& filename);

@@ -5,18 +5,18 @@
 #include <vector>
 #include <mutex>
 
-#include "SemtexFileParser.hpp"
-#include "SemtexFileQueue.hpp"
-#include "SemtexProcessorThread.hpp"
+#include "FileParser.hpp"
+#include "FileQueue.hpp"
+#include "ProcessorThread.hpp"
 
 //! TODO: Bundle into a global state struct
 static bool verbose = false;
 static bool threadsStarted = false;
 static std::unordered_set<std::string> generatedFiles;
 static std::mutex generatedFilesMutex;
-static std::vector<SemtexProcessorThread> auxThreads;
+static std::vector<ProcessorThread> auxThreads;
 
-void severalCallback(SemtexFileQueue& sfq)
+void severalCallback(FileQueue& sfq)
 {
 	if (threadsStarted)
 		return;
@@ -39,12 +39,12 @@ int main(int argc, char** argv) {
 
 	verbose = verbFlag.getValue();
 
-	SemtexFileQueue sfq(severalCallback);
+	FileQueue sfq(severalCallback);
 
 	if (verbose)
 		printf("Running SemTex - Streamlined LaTeX\n");
 
-	processSemtexFile(fileArg.getValue(), true, verbose, sfq, generatedFiles, generatedFilesMutex);
+	processFile(fileArg.getValue(), true, verbose, sfq, generatedFiles, generatedFilesMutex);
 
 	return 0;
 }
