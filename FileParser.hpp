@@ -9,5 +9,6 @@ class Context;
  *        to the queue
  * \param filename The path of the SemTeX file to process
  * \param context The global context (verbosity level, queues, etc.)
+ * \returns true on success, false on some error
  */
-void processFile(const std::string& filename, Context& ctxt);
+bool processFile(const std::string& filename, Context& ctxt);

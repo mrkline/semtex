@@ -2,7 +2,7 @@
 
 #include "Context.hpp"
 
-void processFile(const std::string& file, Context& ctxt)
+bool processFile(const std::string& file, Context& ctxt)
 {
 	if (ctxt.verbose)
 		printf("Processing %s...\n", file.c_str());
@@ -11,4 +11,6 @@ void processFile(const std::string& file, Context& ctxt)
 
 	if (ctxt.verbose)
 		printf("Done processing %s...\n", file.c_str());
+
+	return true;
 }

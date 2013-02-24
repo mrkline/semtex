@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
 		thread.join();
 
 
-	// TODO: Run LaTeX
+	// TODO: Run LaTeX, or just clean up if there was an error
 
 	return 0;
 }

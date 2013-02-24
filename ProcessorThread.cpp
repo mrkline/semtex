@@ -17,11 +17,12 @@ void ProcessorThread::join()
 
 void ProcessorThread::threadProc()
 {
-	while (!exit) {
+	while (!exit && !ctxt.error) {
 		std::string fn = ctxt.queue.dequeue(dequeueTimeout);
 		if (!fn.empty()) {
 			busy = true;
-			processFile(fn, ctxt);
+			if(!processFile(fn, ctxt))
+				ctxt.error = true;
 			busy = false;
 		}
 	}
