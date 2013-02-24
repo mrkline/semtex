@@ -1,6 +1,8 @@
 #include <tclap/CmdLine.h>
 
+#include <algorithm>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "Context.hpp"
@@ -43,6 +45,25 @@ int main(int argc, char** argv) {
 		printf("Running SemTex - Streamlined LaTeX\n");
 
 	processFile(fileArg.getValue(), ctxt);
+
+	// Wait for the threads to finish doing their thing
+	// See FileQueue::setDequeueEnabled for an explanation on why we are disabling dequeuing here
+	while (true) {
+		ctxt.queue.setDequeueEnabled(false);
+		bool done = std::none_of(auxThreads.begin(), auxThreads.end(),
+		                         [](const ProcessorThread& pt) { return pt.isBusy(); } );
+		done = done && ctxt.queue.empty();
+		ctxt.queue.setDequeueEnabled(true);
+		if (done)
+			break;
+		std::this_thread::sleep_for(ProcessorThread::dequeueTimeout);
+	}
+
+	for (auto& thread : auxThreads)
+		thread.join();
+
+
+	// TODO: Run LaTeX
 
 	return 0;
 }

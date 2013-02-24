@@ -1,11 +1,12 @@
 #include "ProcessorThread.hpp"
 
-#include "FileQueue.hpp"
+#include "Context.hpp"
+#include "FileParser.hpp"
 
 const std::chrono::milliseconds ProcessorThread::dequeueTimeout = std::chrono::milliseconds(500);
 
-ProcessorThread::ProcessorThread(FileQueue& sfq)
-	: exit(false), queue(sfq), t(&ProcessorThread::threadProc, this)
+ProcessorThread::ProcessorThread(Context& context)
+	: exit(false), busy(false), ctxt(context), t(&ProcessorThread::threadProc, this)
 {
 }
 
@@ -17,9 +18,11 @@ void ProcessorThread::join()
 void ProcessorThread::threadProc()
 {
 	while (!exit) {
-		std::string fn = queue.dequeue(dequeueTimeout);
+		std::string fn = ctxt.queue.dequeue(dequeueTimeout);
 		if (!fn.empty()) {
-			//! TODO: Call processFile
+			busy = true;
+			processFile(fn, ctxt);
+			busy = false;
 		}
 	}
 }
