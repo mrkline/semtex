@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <fstream>
+#include <regex>
 #include <sys/stat.h>
 #include <sstream>
 
@@ -58,8 +59,7 @@ bool processFile(const std::string& file, Context& ctxt)
 
 		// Gobble whitespace
 		while (readNewline(pi));
-		while (pi.curr < pi.end && (*pi.curr == ' ' || *pi.curr == '\t'))
-			++pi.curr;
+		eatWhitespace(pi);
 	}
 
 	if (ctxt.verbose)
@@ -118,14 +118,18 @@ void processInclude(ParseInfo& pi)
 	catch (const Exceptions::InvalidInputException& ex) {
 		std::stringstream err;
 		err << pi.filename << ":" << pi.currLine << ": " << ex.message << " for \\include or \\import";
-		throw Exceptions::InvalidInputException(err.str());
+		throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
 	}
-	
-	// We should only have one unnamed arg
-	if (args->unlabeled.size() != 1 || args->labeled.size() != 0)
-		throw Exceptions::InvalidInputException("\\include and \\input only take a single argument", __FUNCTION__);
 
-	const std::string& filename = args->unlabeled[0];
+	// We should only have one unnamed arg
+	if (args->unnamed.size() != 1 || args->named.size() != 0) {
+		std::stringstream err;
+		err << pi.filename << ":" << pi.currLine << ": ";
+		err << "\\include and \\input only take a single, unnamed argument";
+		throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
+	}
+
+	const std::string& filename = args->unnamed[0];
 
 	if (fileExists(filename + ".tex")) {
 		if (pi.ctxt.verbose)
@@ -134,14 +138,44 @@ void processInclude(ParseInfo& pi)
 }
 
 std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
-	// Gobble whitespace
-	while (pi.curr < pi.end && (*pi.curr == ' ' || *pi.curr == '\t'))
-		++pi.curr;
-	
+	// Regex for matching args
+	static std::regex unquoted(R"regex(\s*([^",]+)\s*)regex");
+	static std::regex quoted(R"regex(\s*"([^"]+)"\s*)regex");
+	static std::regex quotedNamed(R"regex(^\s*([a-zA-Z]+)=\s*"([^"]+)"\s*,\s*$)regex");
+
+	eatWhitespace(pi);
 	// Accept one newline and more whitespace, then demand a {
+	if (readNewline(pi)) {
+		eatWhitespace(pi);
+	}
 
 	if (pi.curr >= pi.end)
-		throw Exceptions::InvalidInputException("End of file reached before finding arguments");
+		throw Exceptions::InvalidInputException("End of file reached before finding arguments", __FUNCTION__);
+
+	if (*pi.curr != '{')
+		throw Exceptions::InvalidInputException("A new paragraph was found before arguments were found", __FUNCTION__);
+
+	++pi.curr;
+
+	// Argument loop: Accept whitespace, then an arg, then whitespace, then a newline. A comma starts a new argument
+	bool namedReached = false; //Becomes true when named arguments are reached
+	while (true) {
+		eatWhitespace(pi);
+		if (readNewline(pi)) {
+			eatWhitespace(pi);
+			// We cannot have two newlines in a row during an argument list. Make sure we don't get another
+			if (readNewline(pi)) {
+				throw Exceptions::InvalidInputException("A new paragraph was found in the middle of the argument list",
+				                                        __FUNCTION__);
+			}
+		}
+		// Prepare the string to pass to regex
+		const char* argEnd = pi.curr;
+		while(*argEnd != '\r' && *argEnd != '\n' && *argEnd != ',' && *argEnd != '}')
+			++argEnd;
+
+	}
+
 
 	return nullptr;
 }

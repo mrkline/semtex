@@ -22,8 +22,8 @@ public:
 private:
 	std::atomic_bool exit; //!< Raised by join
 	std::atomic_bool busy; //!< True when processing a file, false when waiting for one to process.
-	std::thread t;
 	Context& ctxt;
+	std::thread t;
 
 	void threadProc();
 };

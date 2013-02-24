@@ -16,8 +16,8 @@ struct Replacement {
 
 //! Returned from parseArgs
 struct MacroArgs {
-	std::vector<std::string> unlabeled;
-	std::unordered_map<std::string, std::string> labeled;
+	std::vector<std::string> unnamed;
+	std::unordered_map<std::string, std::string> named;
 };
 
 struct ParseInfo {
@@ -50,6 +50,13 @@ typedef Replacement (*ReplacementGenerator)(ParseInfo& pi);
  * \returns true on success, false on some error
  */
 bool processFile(const std::string& filename, Context& ctxt);
+
+//! Reads tabs and spaces until a non-whitespace character or a newline is hit
+inline void eatWhitespace(ParseInfo& pi)
+{
+	while (pi.curr < pi.end && std::isblank(*pi.curr))
+		++pi.curr;
+}
 
 //! Tries to read a newline at the current location
 //! \returns true if a newline was read
