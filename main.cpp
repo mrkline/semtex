@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
 	if (ctxt.verbose)
 		printf("Running SemTex - Streamlined LaTeX\n");
 
+	// TODO: Exception handling
 	processFile(fileArg.getValue(), ctxt);
 
 	if (threadsStarted) {

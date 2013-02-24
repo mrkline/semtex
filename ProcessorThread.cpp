@@ -21,6 +21,7 @@ void ProcessorThread::threadProc()
 		std::string fn = ctxt.queue.dequeue(dequeueTimeout);
 		if (!fn.empty()) {
 			busy = true;
+			// TODO: Exception handling
 			if(!processFile(fn, ctxt))
 				ctxt.error = true;
 			busy = false;
