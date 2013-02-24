@@ -12,11 +12,11 @@ class FileQueue {
 public:
 	//! Callback to issue if there is more than one file in the queue.
 	//! This is likely a good indication to use multi-threading.
-	typedef void (*SeveralCallback)(FileQueue& q);
+	typedef void (*QueueUsedCallback)(FileQueue& q);
 
 	//! Constructor
 	//! \param cb A callback to issue if there is more than one file in the queue.
-	FileQueue(SeveralCallback call);
+	FileQueue(QueueUsedCallback call);
 
 	//! Enqueue a file to be processed
 	void enqueue(std::string&& filename);
@@ -42,7 +42,7 @@ public:
 	bool empty();
 
 private:
-	SeveralCallback cb;
+	QueueUsedCallback cb;
 	std::queue<std::string> q;
 	std::mutex qMutex; //!< Makes the queue thread-safe
 	std::condition_variable populatedNotifier; //!< Signalled when the queue is repopulated

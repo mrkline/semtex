@@ -16,5 +16,5 @@ struct Context {
 	FileQueue queue; //!< Queue of SemTeX files to be processed
 
 	//! Constructor (just hands callback to queue)
-	Context(FileQueue::SeveralCallback cb) : error(false), queue(cb) { }
+	Context(FileQueue::QueueUsedCallback cb) : error(false), queue(cb) { }
 };

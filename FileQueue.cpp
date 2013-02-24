@@ -2,7 +2,7 @@
 
 #include <thread>
 
-FileQueue::FileQueue(SeveralCallback call)
+FileQueue::FileQueue(QueueUsedCallback call)
 	: cb(call), canDequeue(true)
 {
 }
@@ -12,7 +12,7 @@ void FileQueue::enqueue(std::string&& filename)
 	std::lock_guard<std::mutex> lock(qMutex);
 	q.push(std::forward<std::string>(filename));
 
-	if (q.size() > 1 && cb != nullptr)
+	if (cb != nullptr)
 		cb(*this);
 
 	// Notify anyone waiting for additional files that more have arrived
