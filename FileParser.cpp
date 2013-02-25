@@ -2,7 +2,7 @@
 
 #include <cstring>
 #include <fstream>
-#include <regex>
+#include <boost/regex.hpp>
 #include <sys/stat.h>
 #include <sstream>
 
@@ -141,9 +141,9 @@ void processInclude(ParseInfo& pi)
 
 std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 	// Regex for matching args
-	static std::regex unquoted(R"regex(\s*([^",]+)\s*)regex");
-	static std::regex quoted(R"regex(\s*"([^"]+)"\s*)regex");
-	static std::regex quotedNamed(R"regex(\s*([a-zA-Z]+)=\s*"([^"]+)"\s*,\s*)regex");
+	static boost::regex unquoted(R"regex(\s*([^",]+)\s*)regex");
+	static boost::regex quoted(R"regex(\s*"([^"]+)"\s*)regex");
+	static boost::regex quotedNamed(R"regex(\s*([a-zA-Z]+)=\s*"([^"]+)"\s*,\s*)regex");
 
 	eatWhitespace(pi);
 	// Accept one newline and more whitespace, then demand a {
@@ -176,9 +176,8 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 		while(argEnd <= pi.end && *argEnd != '\r' && *argEnd != '\n' && *argEnd != ',')
 			++argEnd;
 
-
-		std::cmatch argMatch;
-		std::regex_search(pi.curr, argEnd, argMatch, unquoted);
+		boost::cmatch argMatch;
+		boost::regex_search(pi.curr, argEnd, argMatch, unquoted);
 		if (!argMatch.empty())
 			printf("Wohoo!");
 		else
