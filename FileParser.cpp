@@ -1,8 +1,8 @@
 #include "FileParser.hpp"
 
+#include <boost/regex.hpp>
 #include <cstring>
 #include <fstream>
-#include <boost/regex.hpp>
 #include <sys/stat.h>
 #include <sstream>
 
@@ -53,15 +53,26 @@ bool processFile(const std::string& file, Context& ctxt)
 	while (pi.curr < pi.end) {
 		// Characters to the end of the file
 		const size_t remaining = pi.end - pi.curr;
-		if (strncmp(pi.curr, "\\include", std::min(kIncludeLen, remaining)) == 0 ||
-		    strncmp(pi.curr, "\\input", std::min(kInputLen, remaining)) == 0)
-			processInclude(pi);
 
-		// TODO: Ignore comments
-
-		// Gobble whitespace
-		while (readNewline(pi));
-		eatWhitespace(pi);
+		// Ignore commented-out lines
+		if (pi.curr > fileBuff.get() && *pi.curr == '%' && *(pi.curr - 1) != '\\') {
+			while (pi.curr < pi.end && *pi.curr != '\n' && *pi.curr != '\r')
+				++pi.curr;
+			readNewline(pi);
+		}
+		// If it's not-whitespace, try to match it to something
+		else if (isgraph(*pi.curr)) {
+			if (strncmp(pi.curr, "\\include", std::min(kIncludeLen, remaining)) == 0 ||
+				strncmp(pi.curr, "\\input", std::min(kInputLen, remaining)) == 0)
+				processInclude(pi);
+			else
+				++pi.curr; // Try again next time
+		}
+		else {
+			// Gobble whitespace
+			while (readNewline(pi));
+			eatWhitespace(pi);
+		}
 	}
 
 	if (ctxt.verbose)
