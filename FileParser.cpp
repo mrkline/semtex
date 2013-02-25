@@ -57,6 +57,8 @@ bool processFile(const std::string& file, Context& ctxt)
 		    strncmp(pi.curr, "\\input", std::min(kInputLen, remaining)) == 0)
 			processInclude(pi);
 
+		// TODO: Ignore comments
+
 		// Gobble whitespace
 		while (readNewline(pi));
 		eatWhitespace(pi);
@@ -141,7 +143,7 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 	// Regex for matching args
 	static std::regex unquoted(R"regex(\s*([^",]+)\s*)regex");
 	static std::regex quoted(R"regex(\s*"([^"]+)"\s*)regex");
-	static std::regex quotedNamed(R"regex(^\s*([a-zA-Z]+)=\s*"([^"]+)"\s*,\s*$)regex");
+	static std::regex quotedNamed(R"regex(\s*([a-zA-Z]+)=\s*"([^"]+)"\s*,\s*)regex");
 
 	eatWhitespace(pi);
 	// Accept one newline and more whitespace, then demand a {
@@ -171,9 +173,19 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 		}
 		// Prepare the string to pass to regex
 		const char* argEnd = pi.curr;
-		while(*argEnd != '\r' && *argEnd != '\n' && *argEnd != ',' && *argEnd != '}')
+		while(argEnd <= pi.end && *argEnd != '\r' && *argEnd != '\n' && *argEnd != ',')
 			++argEnd;
 
+
+		std::cmatch argMatch;
+		std::regex_search(pi.curr, argEnd, argMatch, unquoted);
+		if (!argMatch.empty())
+			printf("Wohoo!");
+		else
+			printf("boo!");
+
+		exit(0);
+		// TODO: Other types of args
 	}
 
 
