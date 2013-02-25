@@ -152,9 +152,12 @@ void processInclude(ParseInfo& pi)
 
 std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 	// Regex for matching args
-	static boost::regex unquoted(R"regex(\s*([^",]+)\s*)regex");
-	static boost::regex quoted(R"regex(\s*"([^"]+)"\s*)regex");
-	static boost::regex quotedNamed(R"regex(\s*([a-zA-Z]+)=\s*"([^"]+)"\s*,\s*)regex");
+	static boost::regex unquoted(R"regex(\s*([^",}\s]+)\s*)regex");
+	static boost::regex quoted(R"regex(\s*"([^"\s]+)"\s*)regex");
+	static boost::regex unquotedNamed(R"regex(\s*([a-zA-Z]+)\s*=\s*([^",}\s]+)\s*)regex");
+	static boost::regex quotedNamed(R"regex(\s*([a-zA-Z]+)\s*=\s*"([^"\s]+)"\s*)regex");
+
+	std::unique_ptr<MacroArgs> ret(new MacroArgs());
 
 	eatWhitespace(pi);
 	// Accept one newline and more whitespace, then demand a {
@@ -188,16 +191,41 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			++argEnd;
 
 		boost::cmatch argMatch;
-		boost::regex_search(pi.curr, argEnd, argMatch, unquoted);
-		if (!argMatch.empty())
-			printf("Wohoo!");
-		else
-			printf("boo!");
+		if (boost::regex_search(pi.curr, argEnd, argMatch, quotedNamed)) {
+			// TODO (once done debugging): just use emplace?
+			std::string newArgName(argMatch[1].first, argMatch[1].second);
+			std::string newArg(argMatch[2].first, argMatch[2].second);
+			ret->named[newArgName] = newArg;
+			printf("Quoted, named arg found: %s=%s\n", newArgName.c_str(), newArg.c_str());
+			exit(0);
+		}
+		else if	(boost::regex_search(pi.curr, argEnd, argMatch, unquotedNamed)) {
+			// TODO (once done debugging): just use emplace?
+			std::string newArgName(argMatch[1].first, argMatch[1].second);
+			std::string newArg(argMatch[2].first, argMatch[2].second);
+			ret->named[newArgName] = newArg;
+			printf("Unquoted, named arg found: %s=%s\n", newArgName.c_str(), newArg.c_str());
+			exit(0);
+		}
+		else if(boost::regex_search(pi.curr, argEnd, argMatch, quoted)) {
+			// TODO (once done debugging): just use emplace?
+			std::string newArg(argMatch[1].first, argMatch[1].second);
+			ret->unnamed.push_back(newArg);
+			printf("Quoted, unnamed arg found: %s\n", newArg.c_str());
+			exit(0);
+		}
+		else if (boost::regex_search(pi.curr, argEnd, argMatch, unquoted)) {
+			// TODO (once done debugging): just use emplace?
+			std::string newArg(argMatch[0].first, argMatch[0].second);
+			ret->unnamed.push_back(newArg);
+			printf("Unquoted, unnamed arg found: %s\n", newArg.c_str());
+			exit(0);
+		}
 
 		exit(0);
 		// TODO: Other types of args
 	}
 
 
-	return nullptr;
+	return ret;
 }
