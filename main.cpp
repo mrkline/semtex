@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "Context.hpp"
+#include "Exceptions.hpp"
 #include "FileParser.hpp"
 #include "FileQueue.hpp"
 #include "ProcessorThread.hpp"
@@ -48,8 +49,12 @@ int main(int argc, char** argv) {
 	if (ctxt.verbose)
 		printf("Running SemTex - Streamlined LaTeX\n");
 
-	// TODO: Exception handling
-	processFile(fileArg.getValue(), ctxt);
+	try {
+		processFile(fileArg.getValue(), ctxt);
+	}
+	catch (const Exceptions::InvalidInputException& ex) {
+		fprintf(stderr, "%s\n", ex.message.c_str());
+	}
 
 	if (threadsStarted) {
 		// Wait for the threads to finish doing their thing

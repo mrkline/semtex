@@ -1,6 +1,7 @@
 #include "ProcessorThread.hpp"
 
 #include "Context.hpp"
+#include "Exceptions.hpp"
 #include "FileParser.hpp"
 
 const std::chrono::milliseconds ProcessorThread::dequeueTimeout = std::chrono::milliseconds(500);
@@ -22,8 +23,22 @@ void ProcessorThread::threadProc()
 		if (!fn.empty()) {
 			busy = true;
 			// TODO: Exception handling
-			if(!processFile(fn, ctxt))
+			try {
+				if(!processFile(fn, ctxt))
+					ctxt.error = true;
+			}
+			catch (const Exceptions::InvalidInputException& ex) {
 				ctxt.error = true;
+				fprintf(stderr, "%s\n", ex.message.c_str());
+			}
+			catch (const std::exception& ex) {
+				ctxt.error = true;
+				fprintf(stderr, "Unexpected fatal error: %s\n", ex.what());
+			}
+			catch (...) {
+				ctxt.error = true;
+				fprintf(stderr, "Unexpected fatal error");
+			}
 			busy = false;
 		}
 	}
