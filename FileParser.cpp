@@ -109,6 +109,7 @@ bool readNewline(ParseInfo& pi)
 				++pi.curr;
 			}
 		}
+		++pi.currLine;
 		return true;
 	}
 	return false;
