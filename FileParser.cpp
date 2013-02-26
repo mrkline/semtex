@@ -134,6 +134,8 @@ void processInclude(ParseInfo& pi)
 		throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
 	}
 
+	exit(0);
+
 	// We should only have one unnamed arg
 	if (args->unnamed.size() != 1 || args->named.size() != 0) {
 		std::stringstream err;
@@ -152,10 +154,11 @@ void processInclude(ParseInfo& pi)
 
 std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 	// Regex for matching args
-	static boost::regex unquoted(R"regex(\s*([^",}\s]+)\s*)regex");
-	static boost::regex quoted(R"regex(\s*"([^"\s]+)"\s*)regex");
-	static boost::regex unquotedNamed(R"regex(\s*([a-zA-Z]+)\s*=\s*([^",}\s]+)\s*)regex");
-	static boost::regex quotedNamed(R"regex(\s*([a-zA-Z]+)\s*=\s*"([^"\s]+)"\s*)regex");
+	static boost::regex unquoted(R"regex(^\s*([^"=,}\s]+)\s*(,|\})?)regex");
+	static boost::regex quoted(R"regex(^\s*"([^"]+)"\s*(,|\})?)regex");
+	static boost::regex unquotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*([^",}\s]+)\s*(,|\})?)regex");
+	static boost::regex quotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*"([^"]+)"\s*(,|\})?)regex");
+	static boost::regex spacedComma(R"regex(^\s*,\s*)regex");
 
 	std::unique_ptr<MacroArgs> ret(new MacroArgs());
 
@@ -175,6 +178,7 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 
 	// Argument loop: Accept whitespace, then an arg, then whitespace, then a newline. A comma starts a new argument
 	bool namedReached = false; //Becomes true when named arguments are reached
+	bool lastTokenWasComma = false;
 	while (true) {
 		eatWhitespace(pi);
 		if (readNewline(pi)) {
@@ -186,10 +190,10 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			}
 		}
 		// Prepare the string to pass to regex
-		const char* argEnd = pi.curr;
-		while(argEnd <= pi.end && *argEnd != '\r' && *argEnd != '\n' && *argEnd != ',')
+		const char* argEnd = pi.curr + 1;
+		while(argEnd <= pi.end && *argEnd != '\r' && *argEnd != '\n')
 			++argEnd;
-
+		
 		boost::cmatch argMatch;
 		if (boost::regex_search(pi.curr, argEnd, argMatch, quotedNamed)) {
 			// TODO (once done debugging): just use emplace?
@@ -197,7 +201,16 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			std::string newArg(argMatch[2].first, argMatch[2].second);
 			ret->named[newArgName] = newArg;
 			printf("Quoted, named arg found: %s=%s\n", newArgName.c_str(), newArg.c_str());
-			exit(0);
+			pi.curr = argMatch[0].second;
+			namedReached = true;
+			if (argMatch[3].matched) {
+				if (*argMatch[3].first == '}')
+					break;
+				lastTokenWasComma = *argMatch[3].first == ',';
+			}
+			else {
+				lastTokenWasComma = false;
+			}
 		}
 		else if	(boost::regex_search(pi.curr, argEnd, argMatch, unquotedNamed)) {
 			// TODO (once done debugging): just use emplace?
@@ -205,25 +218,69 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			std::string newArg(argMatch[2].first, argMatch[2].second);
 			ret->named[newArgName] = newArg;
 			printf("Unquoted, named arg found: %s=%s\n", newArgName.c_str(), newArg.c_str());
-			exit(0);
+			pi.curr = argMatch[0].second;
+			namedReached = true;
+			if (argMatch[3].matched) {
+				if (*argMatch[3].first == '}')
+					break;
+				lastTokenWasComma = *argMatch[3].first == ',';
+			}
+			else {
+				lastTokenWasComma = false;
+			}
 		}
 		else if(boost::regex_search(pi.curr, argEnd, argMatch, quoted)) {
+			if (namedReached)
+				throw Exceptions::InvalidInputException("All unnamed arguments must come before named ones",
+				                                        __FUNCTION__);
 			// TODO (once done debugging): just use emplace?
 			std::string newArg(argMatch[1].first, argMatch[1].second);
 			ret->unnamed.push_back(newArg);
 			printf("Quoted, unnamed arg found: %s\n", newArg.c_str());
-			exit(0);
+			pi.curr = argMatch[0].second;
+			if (argMatch[2].matched) {
+				if (*argMatch[2].first == '}')
+					break;
+				lastTokenWasComma = *argMatch[3].first == ',';
+			}
+			else {
+				lastTokenWasComma = false;
+			}
 		}
 		else if (boost::regex_search(pi.curr, argEnd, argMatch, unquoted)) {
+			if (namedReached)
+				throw Exceptions::InvalidInputException("All unnamed arguments must come before named ones",
+				                                        __FUNCTION__);
 			// TODO (once done debugging): just use emplace?
 			std::string newArg(argMatch[0].first, argMatch[0].second);
 			ret->unnamed.push_back(newArg);
 			printf("Unquoted, unnamed arg found: %s\n", newArg.c_str());
-			exit(0);
+			pi.curr = argMatch[0].second;
+			if (argMatch[2].matched) {
+				if (*argMatch[2].first == '}')
+					break;
+				lastTokenWasComma = *argMatch[3].first == ',';
+			}
+			else {
+				lastTokenWasComma = false;
+			}
+		}
+		else if (boost::regex_search(pi.curr, argEnd, argMatch, spacedComma)) {
+			/*
+			 * Allow for stupid crap like:
+			 * "myArg
+			 * ,
+			 * "myArg2
+			 */
+			if (lastTokenWasComma)
+				throw Exceptions::InvalidInputException("Missing argument (double commas)", __FUNCTION__);
+			pi.curr = argMatch[0].second;
+			lastTokenWasComma = true;
+		}
+		else {
+			throw Exceptions::InvalidInputException("Invalid argument", __FUNCTION__);
 		}
 
-		exit(0);
-		// TODO: Other types of args
 	}
 
 
