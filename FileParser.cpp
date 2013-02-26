@@ -155,11 +155,12 @@ void processInclude(ParseInfo& pi)
 
 std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 	// Regex for matching args
-	static boost::regex unquoted(R"regex(^\s*([^"=,}\s]+)\s*(,|\})?)regex");
-	static boost::regex quoted(R"regex(^\s*"([^"]+)"\s*(,|\})?)regex");
-	static boost::regex unquotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*([^",}\s]+)\s*(,|\})?)regex");
-	static boost::regex quotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*"([^"]+)"\s*(,|\})?)regex");
-	static boost::regex spacedComma(R"regex(^\s*,\s*)regex");
+	static boost::regex unquoted(R"regex(^\s*([^"=,}\s]+)\s*(,|\})?)regex", boost::regex::optimize);
+	static boost::regex quoted(R"regex(^\s*"([^"]+)"\s*(,|\})?)regex", boost::regex::optimize);
+	static boost::regex unquotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*([^",}\s]+)\s*(,|\})?)regex",
+	                                  boost::regex::optimize);
+	static boost::regex quotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*"([^"]+)"\s*(,|\})?)regex", boost::regex::optimize);
+	static boost::regex spacedComma(R"regex(^\s*,\s*)regex", boost::regex::optimize);
 
 	std::unique_ptr<MacroArgs> ret(new MacroArgs());
 
