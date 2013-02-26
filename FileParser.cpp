@@ -155,9 +155,9 @@ void processInclude(ParseInfo& pi)
 
 std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 	// Regex for matching args
-	static boost::regex unquoted(R"regex(^\s*([^"=,}\s]+)\s*(,|\})?)regex", boost::regex::optimize);
+	static boost::regex unquoted(R"regex(^\s*([^"=,}]*\s*[^"=,}\s]+)\s*(,|\})?)regex", boost::regex::optimize);
 	static boost::regex quoted(R"regex(^\s*"([^"]+)"\s*(,|\})?)regex", boost::regex::optimize);
-	static boost::regex unquotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*([^",}\s]+)\s*(,|\})?)regex",
+	static boost::regex unquotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*([^"=,}]*\s*[^"=,}\s]+)\s*(,|\})?)regex",
 	                                  boost::regex::optimize);
 	static boost::regex quotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*"([^"]+)"\s*(,|\})?)regex", boost::regex::optimize);
 	static boost::regex spacedComma(R"regex(^\s*,\s*)regex", boost::regex::optimize);
@@ -178,7 +178,7 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 
 	++pi.curr;
 
-	// Argument loop: Accept whitespace, then an arg, then whitespace, then a newline. A comma starts a new argument
+	// Argument parsing loop
 	bool namedReached = false; //Becomes true when named arguments are reached
 	bool lastTokenWasComma = false;
 	while (true) {
@@ -254,7 +254,7 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 				throw Exceptions::InvalidInputException("All unnamed arguments must come before named ones",
 				                                        __FUNCTION__);
 			// TODO (once done debugging): just use emplace?
-			std::string newArg(argMatch[0].first, argMatch[0].second);
+			std::string newArg(argMatch[1].first, argMatch[1].second);
 			ret->unnamed.push_back(newArg);
 			printf("Unquoted, unnamed arg found: %s\n", newArg.c_str());
 			pi.curr = argMatch[0].second;
