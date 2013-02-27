@@ -209,6 +209,9 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 		boost::cmatch argMatch;
 		if (boost::regex_search(pi.curr, argEnd, argMatch, quotedNamed)) {
 			std::string newArgName(argMatch[1].first, argMatch[1].second);
+			// Make sure this argument doesn't already exist
+			if (ret->named.find(newArgName) != ret->named.end())
+				throw Exceptions::InvalidInputException("Duplicate argument", __FUNCTION__);
 			ret->named[newArgName] = std::string(argMatch[2].first, argMatch[2].second);
 			pi.curr = argMatch[0].second;
 			namedReached = true;
@@ -223,6 +226,9 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 		}
 		else if	(boost::regex_search(pi.curr, argEnd, argMatch, unquotedNamed)) {
 			std::string newArgName(argMatch[1].first, argMatch[1].second);
+			// Make sure this argument doesn't already exist
+			if (ret->named.find(newArgName) != ret->named.end())
+				throw Exceptions::InvalidInputException("Duplicate argument", __FUNCTION__);
 			ret->named[newArgName] = std::string(argMatch[2].first, argMatch[2].second);
 			pi.curr = argMatch[0].second;
 			namedReached = true;
