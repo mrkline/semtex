@@ -121,7 +121,6 @@ void processInclude(ParseInfo& pi)
 {
 	// For printing purposes, etc., determine if it is \include or \input
 	bool isInclude = pi.curr[3] == 'c';
-	printf("Is %san include\n", isInclude ? "" : "not "); // TEMP
 
 	// Increment curr appropriately
 	pi.curr += isInclude ? kIncludeLen : kInputLen;
@@ -209,11 +208,8 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 
 		boost::cmatch argMatch;
 		if (boost::regex_search(pi.curr, argEnd, argMatch, quotedNamed)) {
-			// TODO (once done debugging): just use emplace?
 			std::string newArgName(argMatch[1].first, argMatch[1].second);
-			std::string newArg(argMatch[2].first, argMatch[2].second);
-			ret->named[newArgName] = newArg;
-			printf("Quoted, named arg found: %s=%s\n", newArgName.c_str(), newArg.c_str());
+			ret->named[newArgName] = std::string(argMatch[2].first, argMatch[2].second);
 			pi.curr = argMatch[0].second;
 			namedReached = true;
 			if (argMatch[3].matched) {
@@ -226,11 +222,8 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			}
 		}
 		else if	(boost::regex_search(pi.curr, argEnd, argMatch, unquotedNamed)) {
-			// TODO (once done debugging): just use emplace?
 			std::string newArgName(argMatch[1].first, argMatch[1].second);
-			std::string newArg(argMatch[2].first, argMatch[2].second);
-			ret->named[newArgName] = newArg;
-			printf("Unquoted, named arg found: %s=%s\n", newArgName.c_str(), newArg.c_str());
+			ret->named[newArgName] = std::string(argMatch[2].first, argMatch[2].second);
 			pi.curr = argMatch[0].second;
 			namedReached = true;
 			if (argMatch[3].matched) {
@@ -246,10 +239,7 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			if (namedReached)
 				throw Exceptions::InvalidInputException("All unnamed arguments must come before named ones",
 				                                        __FUNCTION__);
-			// TODO (once done debugging): just use emplace?
-			std::string newArg(argMatch[1].first, argMatch[1].second);
-			ret->unnamed.push_back(newArg);
-			printf("Quoted, unnamed arg found: %s\n", newArg.c_str());
+			ret->unnamed.emplace_back(argMatch[1].first, argMatch[1].second);
 			pi.curr = argMatch[0].second;
 			if (argMatch[2].matched) {
 				if (*argMatch[2].first == '}')
@@ -264,10 +254,7 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			if (namedReached)
 				throw Exceptions::InvalidInputException("All unnamed arguments must come before named ones",
 				                                        __FUNCTION__);
-			// TODO (once done debugging): just use emplace?
-			std::string newArg(argMatch[1].first, argMatch[1].second);
-			ret->unnamed.push_back(newArg);
-			printf("Unquoted, unnamed arg found: %s\n", newArg.c_str());
+			ret->unnamed.emplace_back(argMatch[1].first, argMatch[1].second);
 			pi.curr = argMatch[0].second;
 			if (argMatch[2].matched) {
 				if (*argMatch[2].first == '}')
