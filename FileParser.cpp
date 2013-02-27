@@ -35,11 +35,11 @@ static bool fileExists(const std::string& file)
 
 bool processFile(const std::string& file, Context& ctxt)
 {
-	if (ctxt.verbose)
+	if (ctxt.verbose && !ctxt.error)
 		printf("Processing %s...\n", file.c_str());
 
 	std::ifstream inf(file, std::ifstream::binary);
-	if (!inf.good()) {
+	if (!inf.good() && !ctxt.error) {
 		printf("Error: Could not open %s\n", file.c_str());
 		return false;
 	}
@@ -77,7 +77,7 @@ bool processFile(const std::string& file, Context& ctxt)
 		}
 	}
 
-	if (ctxt.verbose)
+	if (ctxt.verbose && !ctxt.error)
 		printf("Done processing %s...\n", file.c_str());
 
 	return true;
@@ -149,7 +149,7 @@ void processInclude(ParseInfo& pi)
 	for (const auto& ext : extensions) {
 		std::string fullName = filename + ext;
 		if (fileExists(fullName)) {
-			if (pi.ctxt.verbose)
+			if (pi.ctxt.verbose && !pi.ctxt.error)
 				printf("Adding %s to the list of files to be processed\n", fullName.c_str());
 
 			pi.ctxt.queue.enqueue(std::move(fullName));
