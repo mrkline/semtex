@@ -155,11 +155,17 @@ void processInclude(ParseInfo& pi)
 
 std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 	// Regex for matching args
+
+	//! An unquoted, unnamed arg, such as { myArg }
 	static boost::regex unquoted(R"regex(^\s*([^"=,}]*\s*[^"=,}\s]+)\s*(,|\})?)regex", boost::regex::optimize);
+	//! A quoted, unnamed arg, such as { "myArg" }
 	static boost::regex quoted(R"regex(^\s*"([^"]+)"\s*(,|\})?)regex", boost::regex::optimize);
+	//! An unquoted, named arg, sugh as { foo = bar }
 	static boost::regex unquotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*([^"=,}]*\s*[^"=,}\s]+)\s*(,|\})?)regex",
 	                                  boost::regex::optimize);
+	//! A quoted, named arg, sugh as { foo = "bar" }
 	static boost::regex quotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*"([^"]+)"\s*(,|\})?)regex", boost::regex::optimize);
+	//! A comma, separating args
 	static boost::regex spacedComma(R"regex(^\s*,\s*)regex", boost::regex::optimize);
 
 	std::unique_ptr<MacroArgs> ret(new MacroArgs());
@@ -191,11 +197,11 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 				                                        __FUNCTION__);
 			}
 		}
-		// Prepare the string to pass to regex
+		// Prepare the string to pass to regex (the current line)
 		const char* argEnd = pi.curr + 1;
 		while(argEnd <= pi.end && *argEnd != '\r' && *argEnd != '\n')
 			++argEnd;
-		
+
 		boost::cmatch argMatch;
 		if (boost::regex_search(pi.curr, argEnd, argMatch, quotedNamed)) {
 			// TODO (once done debugging): just use emplace?
