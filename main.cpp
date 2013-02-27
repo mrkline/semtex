@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
 			ctxt.queue.setDequeueEnabled(false);
 			bool done = std::none_of(auxThreads.begin(), auxThreads.end(),
 									 [](const std::unique_ptr<ProcessorThread>& pt) { return pt->isBusy(); } );
-			done = done && ctxt.queue.empty();
+			done = done && (ctxt.queue.empty() || ctxt.error);
 			ctxt.queue.setDequeueEnabled(true);
 			if (done)
 				break;
