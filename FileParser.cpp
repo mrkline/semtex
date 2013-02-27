@@ -1,5 +1,6 @@
 #include "FileParser.hpp"
 
+#include <array>
 #include <boost/regex.hpp>
 #include <cstring>
 #include <fstream>
@@ -19,6 +20,7 @@ struct ReplacementMapping {
 
 static const size_t kInputLen = strlen("\\input"); //!< Length of "\input"
 static const size_t kIncludeLen = strlen("\\include"); //! Length of "\include"
+static std::array<std::string, 3> extensions = {".stex", ".sex", ".tex"};
 
 // TODO: Create a series of ReplacementMappings
 static void init()
@@ -143,11 +145,16 @@ void processInclude(ParseInfo& pi)
 		throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
 	}
 
-	const std::string& filename = args->unnamed[0];
+	std::string filename = args->unnamed[0];
 
-	if (fileExists(filename + ".tex")) {
-		if (pi.ctxt.verbose)
-			printf("Adding %s to the list of files to be processed\n", (filename + ".tex").c_str());
+	for (const auto& ext : extensions) {
+		std::string fullName = filename + ext;
+		if (fileExists(fullName)) {
+			if (pi.ctxt.verbose)
+				printf("Adding %s to the list of files to be processed\n", fullName.c_str());
+
+			pi.ctxt.queue.enqueue(std::move(fullName));
+		}
 	}
 }
 
