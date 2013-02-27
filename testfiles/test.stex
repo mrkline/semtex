@@ -15,5 +15,4 @@
 SemTeX Test
 \end{center}
 
-\include{ f , funky args, "funky }, arrgs man", cool="features"		, cooler="multiple features" , 
-			coolest="working parsing", best 	= robust parsing }
+\include{features}

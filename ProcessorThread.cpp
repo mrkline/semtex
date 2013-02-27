@@ -14,6 +14,7 @@ ProcessorThread::ProcessorThread(Context& context)
 void ProcessorThread::join()
 {
 	exit = true;
+	t.join();
 }
 
 void ProcessorThread::threadProc()

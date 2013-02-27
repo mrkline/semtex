@@ -135,8 +135,6 @@ void processInclude(ParseInfo& pi)
 		throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
 	}
 
-	exit(0);
-
 	// We should only have one unnamed arg
 	if (args->unnamed.size() != 1 || args->named.size() != 0) {
 		std::stringstream err;
