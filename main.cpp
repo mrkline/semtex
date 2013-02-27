@@ -24,10 +24,11 @@ void queueCallback(FileQueue& sfq)
 	if (threadsStarted)
 		return;
 
-	if (ctxt.verbose)
-		printf("Processing multiple files. Starting up additional threads.\n");
-
 	unsigned int numThreads = std::max(2u, std::thread::hardware_concurrency());
+
+	if (ctxt.verbose)
+		printf("Processing multiple files. Starting up %u additional threads.\n", numThreads);
+
 	for (unsigned int n = 0; n < numThreads; ++n)
 		auxThreads.emplace_back(new ProcessorThread(ctxt));
 
