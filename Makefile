@@ -3,7 +3,7 @@
 # but will do just fine until then
 
 CXXFLAGS= -std=c++11 # Add Wall later
-OBJS := main.o FileParser.o FileQueue.o ProcessorThread.o
+OBJS := main.o FileParser.o FileQueue.o ProcessorThread.o MathHandlers.o
 
 all: CXXFLAGS += -g
 all: semtex

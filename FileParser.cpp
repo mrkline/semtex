@@ -9,22 +9,32 @@
 
 #include "Exceptions.hpp"
 #include "Context.hpp"
+#include "MathHandlers.hpp"
 
 struct ReplacementMapping {
  	std::string key; //!< String to trigger a replacement
-	ReplacementGenerator* gen; //!< Function pointer to a function that will do the replacement
+	ReplacementGenerator gen; //!< Function pointer to a function that will do the replacement
 
-	// Used for sorting mappings from shortest to longest
-	bool operator< (const ReplacementMapping& other) { return key.length() < other.key.length(); }
+	ReplacementMapping(std::string&& k, ReplacementGenerator g)
+		: key(k), gen(g)
+	{ }
 };
 
 static const size_t kInputLen = strlen("\\input"); //!< Length of "\input"
 static const size_t kIncludeLen = strlen("\\include"); //! Length of "\include"
 static std::array<std::string, 3> extensions = {".stex", ".sex", ".tex"};
 
-// TODO: Create a series of ReplacementMappings
+static std::vector<ReplacementMapping> mappings;
+
+//! Only needs to be run once. initialized doesn't need to be atomic because the main thread will always run this.
 static void init()
 {
+	static bool initialized = false;
+	if (initialized)
+		return;
+
+	mappings.emplace_back("\\integral", &integralHandler);
+	initialized = true;
 }
 
 static bool fileExists(const std::string& file)
@@ -35,6 +45,8 @@ static bool fileExists(const std::string& file)
 
 bool processFile(const std::string& file, Context& ctxt)
 {
+	init();
+
 	if (ctxt.verbose && !ctxt.error)
 		printf("Processing %s...\n", file.c_str());
 
@@ -62,16 +74,27 @@ bool processFile(const std::string& file, Context& ctxt)
 				++pi.curr;
 			readNewline(pi);
 		}
-		// If it's not-whitespace, try to match it to something
+		// If it's not-whitespace, try to match it to an include
 		else if (isgraph(*pi.curr)) {
 			if (strncmp(pi.curr, "\\include", std::min(kIncludeLen, remaining)) == 0 ||
 				strncmp(pi.curr, "\\input", std::min(kInputLen, remaining)) == 0)
 				processInclude(pi);
-			else
-				++pi.curr; // Try again next time
+			// Otherwise try to match it to a mapping
+			else {
+				bool matched = false;
+				for (const auto& m : mappings) {
+					if (strncmp(pi.curr, m.key.c_str(), std::min(m.key.length(), remaining)) == 0) {
+						m.gen(m.key, pi);
+						matched = true;
+						break;
+					}
+				}
+				if (!matched)
+					++pi.curr; // Try again next time
+			}
 		}
+		// Otherwise just chomp some whitespace
 		else {
-			// Gobble whitespace
 			while (readNewline(pi));
 			eatWhitespace(pi);
 		}

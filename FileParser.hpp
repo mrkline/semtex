@@ -11,7 +11,13 @@ class Context;
 struct Replacement {
 	const char* start = nullptr; //!< Where to start the replacement
 	const char* end = nullptr; //!< One byte past the end of the string to be replaced
-	std::string replaceWith; //!< Replacement string
+	const std::string replaceWith; //!< Immutable replacement string
+
+	Replacement(const char* s, const char* e, std::string&& r)
+		: start(s), end(e), replaceWith(r)
+	{ }
+
+	Replacement(Replacement&& m) = default;
 };
 
 //! Returned from parseArgs
@@ -40,7 +46,7 @@ struct ParseInfo {
 };
 
 //! All replacement generators should take this form:
-typedef Replacement (*ReplacementGenerator)(ParseInfo& pi);
+typedef void (*ReplacementGenerator)(const std::string& matchedKey, ParseInfo& pi);
 
 /*!
  * \brief Processes a SemTeX file, generating a corresponding LaTeX file and adding included SemTeX files
