@@ -27,20 +27,13 @@ std::string FileQueue::dequeue(const std::chrono::milliseconds& timeout)
 		return std::string();
 	}
 	std::unique_lock<std::mutex> lock(qMutex);
-	if (q.empty()) {
-		if (populatedNotifier.wait_for(lock, timeout) == std::cv_status::no_timeout) {
-			std::string ret = std::move(q.front());
-			q.pop();
-			return ret;
-		}
-		else {
-			return std::string();
-		}
-	}
-	else {
+	if (populatedNotifier.wait_for(lock, timeout, [this] { return !q.empty(); })) {
 		std::string ret = std::move(q.front());
 		q.pop();
 		return ret;
+	}
+	else {
+		return std::string();
 	}
 }
 
