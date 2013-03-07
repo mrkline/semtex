@@ -113,6 +113,13 @@ bool processFile(const std::string& file, Context& ctxt)
 		static boost::regex fext(R"regex((stex|sex)$)regex", boost::regex::optimize);
 		const std::string outname = boost::regex_replace(file, fext, "tex");
 		std::ofstream outfile(outname);
+		if (!outfile.good()) {
+			printf("Error: Could not open output file %s\n", outname.c_str());
+			return false;
+		}
+		ctxt.generatedFilesMutex.lock();
+		ctxt.generatedFiles.emplace_back(outname);
+		ctxt.generatedFilesMutex.unlock();
 		if (pi.replacements.empty()) {
 			outfile.write(fileBuff.get(), fileSize);
 		}
