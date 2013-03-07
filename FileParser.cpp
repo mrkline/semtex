@@ -59,7 +59,6 @@ bool processFile(const std::string& file, Context& ctxt)
 	size_t fileSize = inf.tellg();
 	inf.seekg(0, std::ifstream::beg);
 	std::unique_ptr<char[]> fileBuff(new char[fileSize]);
-	const char* const endBuff = fileBuff.get() + fileSize;
 	inf.read(fileBuff.get(), fileSize);
 	inf.close();
 	//! \todo Convert to UTF-8 if needed
@@ -137,7 +136,7 @@ bool processFile(const std::string& file, Context& ctxt)
 				curr = r.end;
 			}
 			// Write out the end of the file
-			outfile.write(curr, std::distance(curr, endBuff));
+			outfile.write(curr, std::distance(curr, pi.end));
 		}
 		if (ctxt.verbose && !ctxt.error) // Fairly safe to skip another error check here since we just checked
 			printf("Done writing out LaTeX file for %s...\n", file.c_str());

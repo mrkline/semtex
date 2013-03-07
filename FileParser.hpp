@@ -29,7 +29,7 @@ struct MacroArgs {
 struct ParseInfo {
 	const std::string filename;
 	const char* curr;
-	const char* end;
+	const char* const end;
 	int currLine;
 	int unixNewlines;
 	int windowsNewlines;
