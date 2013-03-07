@@ -59,17 +59,18 @@ bool processFile(const std::string& file, Context& ctxt)
 	size_t fileSize = inf.tellg();
 	inf.seekg(0, std::ifstream::beg);
 	std::unique_ptr<char[]> fileBuff(new char[fileSize]);
+	const char* const endBuff = fileBuff.get() + fileSize;
 	inf.read(fileBuff.get(), fileSize);
 	inf.close();
 	//! \todo Convert to UTF-8 if needed
 
 	// True if this is as .stex or .sex file and we will modify it
-	bool change = false;
+	bool createModdedCopy = false;
 	const auto& ste = extensions[0];
 	const auto& se = extensions[1];
 	if ((file.length() > ste.length() && file.compare(file.length() - ste.length(), ste.length(), ste) == 0)
 	    || (file.length() > se.length() && file.compare(file.length() - se.length(), se.length(), se) == 0))
-		change = true;
+		createModdedCopy = true;
 
 	ParseInfo pi(file, fileBuff.get(), fileBuff.get() + fileSize, ctxt);
 	while (pi.curr < pi.end) {
@@ -90,11 +91,13 @@ bool processFile(const std::string& file, Context& ctxt)
 			// Otherwise try to match it to a mapping
 			else {
 				bool matched = false;
-				for (const auto& m : mappings) {
-					if (strncmp(pi.curr, m.key.c_str(), std::min(m.key.length(), remaining)) == 0) {
-						m.gen(m.key, pi);
-						matched = true;
-						break;
+				if (createModdedCopy) { // Don't bother doing search and replace for files we won't modify
+					for (const auto& m : mappings) {
+						if (strncmp(pi.curr, m.key.c_str(), std::min(m.key.length(), remaining)) == 0) {
+							m.gen(m.key, pi);
+							matched = true;
+							break;
+						}
 					}
 				}
 				if (!matched)
@@ -110,6 +113,35 @@ bool processFile(const std::string& file, Context& ctxt)
 
 	if (ctxt.verbose && !ctxt.error)
 		printf("Done processing %s...\n", file.c_str());
+
+	if (createModdedCopy && !ctxt.error) { // Don't bother creating a copy if we've errored out
+		if (ctxt.verbose) // Fairly safe to skip another error check here since we just checked
+			printf("Writing out LaTeX file for %s...\n", file.c_str());
+
+		// Replace the file's extension
+		static boost::regex fext(R"regex((stex|sex)$)regex", boost::regex::optimize);
+		const std::string outname = boost::regex_replace(file, fext, "tex");
+		std::ofstream outfile(outname);
+		if (pi.replacements.empty()) {
+			outfile.write(fileBuff.get(), fileSize);
+		}
+		else {
+			// TODO: Replace all newlines in replacements with the most commonly found newline in the file,
+			//       perhaps using boost::replace_all
+			const char* curr = fileBuff.get();
+			for (const auto& r : pi.replacements) {
+				// Write from the current location up to the start of the replacement
+				outfile.write(curr, std::distance(curr, r.start));
+				// Write the replacement
+				outfile << r.replaceWith;
+				curr = r.end;
+			}
+			// Write out the end of the file
+			outfile.write(curr, std::distance(curr, endBuff));
+		}
+		if (ctxt.verbose && !ctxt.error) // Fairly safe to skip another error check here since we just checked
+			printf("Done writing out LaTeX file for %s...\n", file.c_str());
+	}
 
 	return true;
 }
