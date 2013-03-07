@@ -1,6 +1,7 @@
 #include <tclap/CmdLine.h>
 
 #include <algorithm>
+#include <boost/regex.hpp>
 #include <string>
 #include <thread>
 #include <vector>
@@ -79,8 +80,12 @@ int main(int argc, char** argv) {
 		if (ctxt.verbose)
 			printf("Running pdflatex\n");
 
+		//! \todo Move this into a function? This is the second place we use it
+		boost::regex fext(R"regex((stex|sex)$)regex", boost::regex::optimize);
+		const std::string texname = boost::regex_replace(fileArg.getValue(), fext, "tex");
+
 		// TODO: handle pdflatex automatically instead of just calling it
-		system(("pdflatex " + fileArg.getValue()).c_str());
+		system(("pdflatex " + texname).c_str());
 	}
 	else
 	{
