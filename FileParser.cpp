@@ -9,22 +9,13 @@
 
 #include "Exceptions.hpp"
 #include "Context.hpp"
-#include "MathHandlers.hpp"
-
-struct ReplacementMapping {
- 	std::string key; //!< String to trigger a replacement
-	ReplacementGenerator gen; //!< Function pointer to a function that will do the replacement
-
-	ReplacementMapping(std::string&& k, ReplacementGenerator g)
-		: key(k), gen(g)
-	{ }
-};
+#include "UnitReplacer.hpp"
 
 static const size_t kInputLen = strlen("\\input"); //!< Length of "\input"
 static const size_t kIncludeLen = strlen("\\include"); //! Length of "\include"
 static std::array<const std::string, 3> extensions = {{".stex", ".sex", ".tex"}};
 
-static std::vector<ReplacementMapping> mappings;
+static std::vector<std::unique_ptr<Replacer>> replacers;
 
 //! Only needs to be run once. initialized doesn't need to be atomic because the main thread will always run this.
 static void init()
@@ -33,7 +24,7 @@ static void init()
 	if (initialized)
 		return;
 
-	mappings.emplace_back("\\unit", &unitsHandler);
+	replacers.emplace_back(new UnitReplacer);
 	initialized = true;
 }
 
@@ -91,12 +82,16 @@ bool processFile(const std::string& file, Context& ctxt)
 			else {
 				bool matched = false;
 				if (createModdedCopy) { // Don't bother doing search and replace for files we won't modify
-					for (const auto& m : mappings) {
-						if (strncmp(pi.curr, m.key.c_str(), std::min(m.key.length(), remaining)) == 0) {
-							m.gen(m.key, pi);
-							matched = true;
-							break;
+					for (const auto& r : replacers) {
+						for (const auto& k : r->getKeys()) {
+							if (strncmp(pi.curr, k.c_str(), std::min(k.length(), remaining)) == 0) {
+								r->replace(k, pi);
+								matched = true;
+								break;
+							}
 						}
+						if (matched)
+							break;
 					}
 
 					//! \todo Recurse here. If a new replacement was made, create a ParsInfo for the replacement

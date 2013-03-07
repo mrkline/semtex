@@ -1,8 +1,13 @@
-#include "MathHandlers.hpp"
+#include "UnitReplacer.hpp"
 
 #include "Exceptions.hpp"
+#include "FileParser.hpp"
 
-void unitsHandler(const std::string& matchedKey, ParseInfo& pi)
+UnitReplacer::UnitReplacer()
+	: Replacer({"\\unit"})
+{ }
+
+void UnitReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 {
 	const char* start = pi.curr;
 	pi.curr += matchedKey.length();
