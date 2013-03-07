@@ -2,7 +2,7 @@
 # I mean to mess with another build systems (maybe scons) at some point,
 # but will do just fine until then
 
-CXXFLAGS= -std=c++11 # Add Wall later
+CXXFLAGS= -std=c++11 -Wall
 OBJS := main.o FileParser.o FileQueue.o ProcessorThread.o MathHandlers.o
 
 all: CXXFLAGS += -g
