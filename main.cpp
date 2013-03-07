@@ -72,11 +72,25 @@ int main(int argc, char** argv) {
 		}
 
 		for (auto& thread : auxThreads)
-			thread->join();
+			thread->beginExit();
 	}
 
+	if (!ctxt.error) {
+		if (ctxt.verbose)
+			printf("Running pdflatex\n");
 
-	// TODO: Run LaTeX, or just clean up if there was an error
+		// TODO: handle pdflatex automatically instead of just calling it
+		system(("pdflatex " + fileArg.getValue()).c_str());
+	}
+	else
+	{
+		if (ctxt.verbose)
+			printf("Skipping pdflatex due to errors\n");
+	}
 
+	if (threadsStarted) {
+		for (auto& thread : auxThreads)
+			thread->join();
+	}
 	return 0;
 }

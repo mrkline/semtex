@@ -11,6 +11,11 @@ ProcessorThread::ProcessorThread(Context& context)
 {
 }
 
+void ProcessorThread::beginExit()
+{
+	exit = true;
+}
+
 void ProcessorThread::join()
 {
 	exit = true;

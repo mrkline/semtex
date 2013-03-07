@@ -16,6 +16,9 @@ public:
 
 	bool isBusy() const { return busy; }
 
+	//! Tells thread to finish its current file and close
+	void beginExit();
+
 	//! Closes the thread as soon as it is done processing 
 	void join();
 
