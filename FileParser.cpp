@@ -98,6 +98,9 @@ bool processFile(const std::string& file, Context& ctxt)
 							break;
 						}
 					}
+
+					//! \todo Recurse here. If a new replacement was made, create a ParsInfo for the replacement
+					//        And scan through it. Repeat until no more replacements are found in the replacement.
 				}
 				if (!matched)
 					++pi.curr; // Try again next time
