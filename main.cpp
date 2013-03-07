@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 		printf("Running SemTex - Streamlined LaTeX\n");
 
 	try {
-		processFile(fileArg.getValue(), ctxt);
+		ctxt.error = !processFile(fileArg.getValue(), ctxt);
 	}
 	catch (const Exceptions::InvalidInputException& ex) {
 		fprintf(stderr, "%s\n", ex.message.c_str());

@@ -51,7 +51,7 @@ bool processFile(const std::string& file, Context& ctxt)
 		printf("Processing %s...\n", file.c_str());
 
 	std::ifstream inf(file, std::ifstream::binary);
-	if (!inf.good() && !ctxt.error) {
+	if (!inf.good()) {
 		printf("Error: Could not open %s\n", file.c_str());
 		return false;
 	}
