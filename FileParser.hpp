@@ -75,6 +75,7 @@ void processInclude(ParseInfo& pi);
 /*!
  * \brief Parses SemTeX args (e.g. \macro{args}).
  * \returns A heap-allocated MacroArgs struct containing the arguments
+ * \todo Would stack allocation be better?
  *
  * When the function returns, pi.curr is moved past the arguments
  */

@@ -33,7 +33,7 @@ static void init()
 	if (initialized)
 		return;
 
-	mappings.emplace_back("\\integral", &integralHandler);
+	mappings.emplace_back("\\unit", &unitsHandler);
 	initialized = true;
 }
 
