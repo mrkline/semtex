@@ -63,6 +63,14 @@ bool processFile(const std::string& file, Context& ctxt)
 	inf.close();
 	//! \todo Convert to UTF-8 if needed
 
+	// True if this is as .stex or .sex file and we will modify it
+	bool change = false;
+	const auto& ste = extensions[0];
+	const auto& se = extensions[1];
+	if ((file.length() > ste.length() && file.compare(file.length() - ste.length(), ste.length(), ste) == 0)
+	    || (file.length() > se.length() && file.compare(file.length() - se.length(), se.length(), se) == 0))
+		change = true;
+
 	ParseInfo pi(file, fileBuff.get(), fileBuff.get() + fileSize, ctxt);
 	while (pi.curr < pi.end) {
 		// Characters to the end of the file
