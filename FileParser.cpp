@@ -1,10 +1,10 @@
 #include "FileParser.hpp"
 
 #include <array>
+#include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 #include <cstring>
 #include <fstream>
-#include <sys/stat.h>
 #include <sstream>
 
 #include "Exceptions.hpp"
@@ -26,12 +26,6 @@ static void init()
 
 	replacers.emplace_back(new UnitReplacer);
 	initialized = true;
-}
-
-static bool fileExists(const std::string& file)
-{
-	struct stat sb;
-	return stat(file.c_str(), &sb) == 0;
 }
 
 bool processFile(const std::string& file, Context& ctxt)
@@ -208,7 +202,8 @@ void processInclude(ParseInfo& pi)
 
 	for (const auto& ext : extensions) {
 		std::string fullName = filename + ext;
-		if (fileExists(fullName)) {
+		using namespace boost::filesystem;
+		if (exists(symlink_status(fullName))) {
 			if (pi.ctxt.verbose && !pi.ctxt.error)
 				printf("Adding %s to the list of files to be processed\n", fullName.c_str());
 

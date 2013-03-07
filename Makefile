@@ -12,7 +12,7 @@ release: semtex
 
 # link
 semtex: $(OBJS)
-	$(CXX) $(CXXFLAGS) -pthread -lboost_regex $(OBJS) -o semtex
+	$(CXX) $(CXXFLAGS) -pthread -lboost_regex -lboost_system -lboost_filesystem $(OBJS) -o semtex
 
 # pull in dependency info for *existing* .o files
 -include $(OBJS:.o=.d)
