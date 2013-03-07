@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 			ctxt.queue.setDequeueEnabled(true);
 			if (done)
 				break;
-			std::this_thread::sleep_for(ProcessorThread::dequeueTimeout);
+			std::this_thread::sleep_for(ProcessorThread::dequeueTimeout / 2);
 		}
 
 		for (auto& thread : auxThreads)
