@@ -1,5 +1,7 @@
 #include "UnitReplacer.hpp"
 
+#include <sstream>
+
 #include "Exceptions.hpp"
 #include "FileParser.hpp"
 
@@ -11,7 +13,15 @@ void UnitReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 {
 	const char* start = pi.curr;
 	pi.curr += matchedKey.length();
-	auto args = parseArgs(pi);
+	std::unique_ptr<MacroArgs> args;
+	try {
+		args = parseArgs(pi);
+	}
+	catch (const Exceptions::InvalidInputException& ex) {
+		std::stringstream err;
+		err << pi.filename << ":" << pi.currLine << ": " << ex.message << " for \\unit";
+		throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
+	}
 	std::string* unit;
 	if (args->unnamed.size() == 1 && args->named.size() == 0)
 		unit = &args->unnamed[0];

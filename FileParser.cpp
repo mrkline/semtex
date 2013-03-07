@@ -37,7 +37,7 @@ bool processFile(const std::string& file, Context& ctxt)
 
 	std::ifstream inf(file, std::ifstream::binary);
 	if (!inf.good()) {
-		printf("Error: Could not open %s\n", file.c_str());
+		fprintf(stderr, "Error: Could not open %s\n", file.c_str());
 		return false;
 	}
 	inf.seekg(0, std::ifstream::end);
@@ -114,7 +114,7 @@ bool processFile(const std::string& file, Context& ctxt)
 		const std::string outname = boost::regex_replace(file, fext, "tex");
 		std::ofstream outfile(outname);
 		if (!outfile.good()) {
-			printf("Error: Could not open output file %s\n", outname.c_str());
+			fprintf(stderr, "Error: Could not open output file %s\n", outname.c_str());
 			return false;
 		}
 		ctxt.generatedFilesMutex.lock();
@@ -246,7 +246,7 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 		throw Exceptions::InvalidInputException("End of file reached before finding arguments", __FUNCTION__);
 
 	if (*pi.curr != '{')
-		throw Exceptions::InvalidInputException("A new paragraph was found before arguments were found", __FUNCTION__);
+		throw Exceptions::InvalidInputException("Bad argument list", __FUNCTION__);
 
 	++pi.curr;
 
