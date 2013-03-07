@@ -22,7 +22,7 @@ struct ReplacementMapping {
 
 static const size_t kInputLen = strlen("\\input"); //!< Length of "\input"
 static const size_t kIncludeLen = strlen("\\include"); //! Length of "\include"
-static std::array<std::string, 3> extensions = {".stex", ".sex", ".tex"};
+static std::array<const std::string, 3> extensions = {{".stex", ".sex", ".tex"}};
 
 static std::vector<ReplacementMapping> mappings;
 
