@@ -45,9 +45,6 @@ struct ParseInfo {
 	{ }
 };
 
-//! All replacement generators should take this form:
-typedef void (*ReplacementGenerator)(const std::string& matchedKey, ParseInfo& pi);
-
 /*!
  * \brief Processes a SemTeX file, generating a corresponding LaTeX file and adding included SemTeX files
  *        to the queue
