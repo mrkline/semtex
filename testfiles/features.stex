@@ -1,6 +1,8 @@
 \section{Features}
 \begin{description}
 \item[auto-spaced units]
-	\[20\unit{unis="\frac{V}{m^2}"}\]
+	\[20\unit{unis="\frac{V}{m^2}", foo="bar", biz="bad
+	,
+	stupid="these args"}\]
 \end{description}
 

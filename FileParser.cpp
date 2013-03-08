@@ -252,6 +252,7 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 
 	// Argument parsing loop
 	bool namedReached = false; //Becomes true when named arguments are reached
+	bool needsCommaNext = false;
 	bool lastTokenWasComma = false;
 	while (true) {
 		eatWhitespace(pi);
@@ -271,7 +272,7 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			++argEnd;
 
 		boost::cmatch argMatch;
-		if (boost::regex_search(pi.curr, argEnd, argMatch, quotedNamed)) {
+		if (!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, quotedNamed)) {
 			std::string newArgName(argMatch[1].first, argMatch[1].second);
 			// Make sure this argument doesn't already exist
 			if (ret->named.find(newArgName) != ret->named.end()) {
@@ -290,8 +291,9 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			else {
 				lastTokenWasComma = false;
 			}
+			needsCommaNext = !lastTokenWasComma;
 		}
-		else if	(boost::regex_search(pi.curr, argEnd, argMatch, unquotedNamed)) {
+		else if	(!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, unquotedNamed)) {
 			std::string newArgName(argMatch[1].first, argMatch[1].second);
 			// Make sure this argument doesn't already exist
 			if (ret->named.find(newArgName) != ret->named.end()) {
@@ -310,8 +312,9 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			else {
 				lastTokenWasComma = false;
 			}
+			needsCommaNext = !lastTokenWasComma;
 		}
-		else if(boost::regex_search(pi.curr, argEnd, argMatch, quoted)) {
+		else if(!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, quoted)) {
 			if (namedReached) {
 				std::stringstream err;
 				err << pi.filename << ":" << pi.currLine << ": All unnamed arguments must come before named ones";
@@ -327,8 +330,9 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			else {
 				lastTokenWasComma = false;
 			}
+			needsCommaNext = !lastTokenWasComma;
 		}
-		else if (boost::regex_search(pi.curr, argEnd, argMatch, unquoted)) {
+		else if (!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, unquoted)) {
 			if (namedReached) {
 				std::stringstream err;
 				err << pi.filename << ":" << pi.currLine << ": All unnamed arguments must come before named ones";
@@ -344,6 +348,7 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			else {
 				lastTokenWasComma = false;
 			}
+			needsCommaNext = !lastTokenWasComma;
 		}
 		else if (boost::regex_search(pi.curr, argEnd, argMatch, spacedComma)) {
 			/*
@@ -359,6 +364,7 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			}
 			pi.curr = argMatch[0].second;
 			lastTokenWasComma = true;
+			needsCommaNext = false;
 		}
 		else {
 			std::stringstream err;
