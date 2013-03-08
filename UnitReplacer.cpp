@@ -18,7 +18,7 @@ void UnitReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 		args = parseArgs(pi);
 	}
 	catch (const Exceptions::InvalidInputException& ex) {
-		throw Exceptions::InvalidInputException(ex.message + " for \\unit", __FUNCTION__);
+		throw Exceptions::InvalidInputException(ex.message + " in \\unit", __FUNCTION__);
 	}
 	std::string* unit;
 	if (args->unnamed.size() == 1 && args->named.size() == 0)

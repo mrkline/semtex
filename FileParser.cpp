@@ -315,7 +315,9 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			needsCommaNext = !lastTokenWasComma;
 		}
 		else if(!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, quoted)) {
-			if (namedReached) {
+			if (namedReached && argMatch[0].second == argEnd) {
+				// If this is the end of the line, yell at the user for putting an unnamed arg after a named one.
+				// If this is not at the end of the line, we will register the arg as invalid in the next iteration
 				std::stringstream err;
 				err << pi.filename << ":" << pi.currLine << ": All unnamed arguments must come before named ones";
 				throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
@@ -333,7 +335,9 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			needsCommaNext = !lastTokenWasComma;
 		}
 		else if (!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, unquoted)) {
-			if (namedReached) {
+			if (namedReached && argMatch[0].second == argEnd) {
+				// If this is the end of the line, yell at the user for putting an unnamed arg after a named one.
+				// If this is not at the end of the line, we will register the arg as invalid in the next iteration
 				std::stringstream err;
 				err << pi.filename << ":" << pi.currLine << ": All unnamed arguments must come before named ones";
 				throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
