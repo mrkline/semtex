@@ -60,10 +60,19 @@ int main(int argc, char** argv) {
 		printf("Running SemTex - Streamlined LaTeX\n");
 
 	try {
-		ctxt.error = !processFile(fileArg.getValue(), ctxt);
+		processFile(fileArg.getValue(), ctxt);
 	}
-	catch (const Exceptions::InvalidInputException& ex) {
+	catch (const Exceptions::Exception& ex) {
+		ctxt.error = true;
 		fprintf(stderr, "%s\n", ex.message.c_str());
+	}
+	catch (const std::exception& ex) {
+		ctxt.error = true;
+		fprintf(stderr, "Unexpected fatal error: %s\n", ex.what());
+	}
+	catch (...) {
+		ctxt.error = true;
+		fprintf(stderr, "Unexpected fatal error");
 	}
 
 	if (threadsStarted) {

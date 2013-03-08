@@ -30,10 +30,9 @@ void ProcessorThread::threadProc()
 			busy = true;
 			// TODO: Exception handling
 			try {
-				if(!processFile(fn, ctxt))
-					ctxt.error = true;
+				processFile(fn, ctxt);
 			}
-			catch (const Exceptions::InvalidInputException& ex) {
+			catch (const Exceptions::Exception& ex) {
 				ctxt.error = true;
 				fprintf(stderr, "%s\n", ex.message.c_str());
 			}

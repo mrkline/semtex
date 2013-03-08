@@ -1,6 +1,6 @@
 \section{Features}
 \begin{description}
-\item[Cool stuff] To follow\ldots
+\item[auto-spaced units]
+	\[20\unit{unis="\frac{V}{m^2}"}\]
 \end{description}
 
-\[20\unit{"\frac{V}{m^2}"}\]

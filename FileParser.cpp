@@ -28,7 +28,7 @@ static void init()
 	initialized = true;
 }
 
-bool processFile(const std::string& file, Context& ctxt)
+void processFile(const std::string& file, Context& ctxt)
 {
 	init();
 
@@ -37,8 +37,7 @@ bool processFile(const std::string& file, Context& ctxt)
 
 	std::ifstream inf(file, std::ifstream::binary);
 	if (!inf.good()) {
-		fprintf(stderr, "Error: Could not open %s\n", file.c_str());
-		return false;
+		throw Exceptions::FileException("Error: Could not open " + file, __FUNCTION__);
 	}
 	inf.seekg(0, std::ifstream::end);
 	size_t fileSize = inf.tellg();
@@ -114,8 +113,7 @@ bool processFile(const std::string& file, Context& ctxt)
 		const std::string outname = boost::regex_replace(file, fext, "tex");
 		std::ofstream outfile(outname);
 		if (!outfile.good()) {
-			fprintf(stderr, "Error: Could not open output file %s\n", outname.c_str());
-			return false;
+			throw Exceptions::FileException("Error: Could not open output file " + outname, __FUNCTION__);
 		}
 		ctxt.generatedFilesMutex.lock();
 		ctxt.generatedFiles.emplace_back(outname);
@@ -140,8 +138,6 @@ bool processFile(const std::string& file, Context& ctxt)
 		if (ctxt.verbose && !ctxt.error) // Fairly safe to skip another error check here since we just checked
 			printf("Done writing out LaTeX file for %s...\n", file.c_str());
 	}
-
-	return true;
 }
 
 bool readNewline(ParseInfo& pi)
@@ -192,9 +188,7 @@ void processInclude(ParseInfo& pi)
 		args = parseArgs(pi);
 	}
 	catch (const Exceptions::InvalidInputException& ex) {
-		std::stringstream err;
-		err << pi.filename << ":" << pi.currLine << ": " << ex.message << " for \\include or \\import";
-		throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
+		throw Exceptions::InvalidInputException(ex.message + " for \\include or \\import", __FUNCTION__);
 	}
 
 	// We should only have one unnamed arg
@@ -242,11 +236,17 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 		eatWhitespace(pi);
 	}
 
-	if (pi.curr >= pi.end)
-		throw Exceptions::InvalidInputException("End of file reached before finding arguments", __FUNCTION__);
+	if (pi.curr >= pi.end) {
+		std::stringstream err;
+		err << pi.filename << ":" << pi.currLine << ": End of file reached before finding arguments";
+		throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
+	}
 
-	if (*pi.curr != '{')
-		throw Exceptions::InvalidInputException("Bad argument list", __FUNCTION__);
+	if (*pi.curr != '{') {
+		std::stringstream err;
+		err << pi.filename << ":" << pi.currLine << ": Bad argument list";
+		throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
+	}
 
 	++pi.curr;
 
@@ -259,8 +259,10 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			eatWhitespace(pi);
 			// We cannot have two newlines in a row during an argument list. Make sure we don't get another
 			if (readNewline(pi)) {
-				throw Exceptions::InvalidInputException("A new paragraph was found in the middle of the argument list",
-				                                        __FUNCTION__);
+				std::stringstream err;
+				err << pi.filename << ":" << pi.currLine;
+				err << ": A new paragraph was found in the middle of the argument list";
+				throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
 			}
 		}
 		// Prepare the string to pass to regex (the current line)
@@ -272,8 +274,11 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 		if (boost::regex_search(pi.curr, argEnd, argMatch, quotedNamed)) {
 			std::string newArgName(argMatch[1].first, argMatch[1].second);
 			// Make sure this argument doesn't already exist
-			if (ret->named.find(newArgName) != ret->named.end())
-				throw Exceptions::InvalidInputException("Duplicate argument", __FUNCTION__);
+			if (ret->named.find(newArgName) != ret->named.end()) {
+				std::stringstream err;
+				err << pi.filename << ":" << pi.currLine << ": Duplicate argument";
+				throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
+			}
 			ret->named[newArgName] = std::string(argMatch[2].first, argMatch[2].second);
 			pi.curr = argMatch[0].second;
 			namedReached = true;
@@ -289,8 +294,11 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 		else if	(boost::regex_search(pi.curr, argEnd, argMatch, unquotedNamed)) {
 			std::string newArgName(argMatch[1].first, argMatch[1].second);
 			// Make sure this argument doesn't already exist
-			if (ret->named.find(newArgName) != ret->named.end())
-				throw Exceptions::InvalidInputException("Duplicate argument", __FUNCTION__);
+			if (ret->named.find(newArgName) != ret->named.end()) {
+				std::stringstream err;
+				err << pi.filename << ":" << pi.currLine << ": Duplicate argument";
+				throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
+			}
 			ret->named[newArgName] = std::string(argMatch[2].first, argMatch[2].second);
 			pi.curr = argMatch[0].second;
 			namedReached = true;
@@ -304,9 +312,11 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			}
 		}
 		else if(boost::regex_search(pi.curr, argEnd, argMatch, quoted)) {
-			if (namedReached)
-				throw Exceptions::InvalidInputException("All unnamed arguments must come before named ones",
-				                                        __FUNCTION__);
+			if (namedReached) {
+				std::stringstream err;
+				err << pi.filename << ":" << pi.currLine << ": All unnamed arguments must come before named ones";
+				throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
+			}
 			ret->unnamed.emplace_back(argMatch[1].first, argMatch[1].second);
 			pi.curr = argMatch[0].second;
 			if (argMatch[2].matched) {
@@ -319,9 +329,11 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			}
 		}
 		else if (boost::regex_search(pi.curr, argEnd, argMatch, unquoted)) {
-			if (namedReached)
-				throw Exceptions::InvalidInputException("All unnamed arguments must come before named ones",
-				                                        __FUNCTION__);
+			if (namedReached) {
+				std::stringstream err;
+				err << pi.filename << ":" << pi.currLine << ": All unnamed arguments must come before named ones";
+				throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
+			}
 			ret->unnamed.emplace_back(argMatch[1].first, argMatch[1].second);
 			pi.curr = argMatch[0].second;
 			if (argMatch[2].matched) {
@@ -340,13 +352,18 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			 * ,
 			 * "myArg2
 			 */
-			if (lastTokenWasComma)
-				throw Exceptions::InvalidInputException("Missing argument (double commas)", __FUNCTION__);
+			if (lastTokenWasComma) {
+				std::stringstream err;
+				err << pi.filename << ":" << pi.currLine << ": Missing argument (double commas)";
+				throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
+			}
 			pi.curr = argMatch[0].second;
 			lastTokenWasComma = true;
 		}
 		else {
-			throw Exceptions::InvalidInputException("Invalid argument", __FUNCTION__);
+			std::stringstream err;
+			err << pi.filename << ":" << pi.currLine << ": Invalid argument";
+			throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
 		}
 
 	}
