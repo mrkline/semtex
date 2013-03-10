@@ -45,6 +45,12 @@ struct ParseInfo {
 	{ }
 };
 
+//! Returns true for strings like "true", "True", "TRUE", "t", "T", "y", "Y", "yes", "Yes", "1"
+bool stringRepresentsTrue(const std::string& str);
+
+//! Returns true for strings like "false", "False", "FALSE", "f", "F", "n", "N", "no", "No", "0"
+bool stringRepresentsFalse(const std::string& str);
+
 /*!
  * \brief Processes a SemTeX file, generating a corresponding LaTeX file and adding included SemTeX files
  *        to the queue

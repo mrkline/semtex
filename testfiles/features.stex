@@ -1,8 +1,8 @@
 \section{Features}
 \begin{description}
 \item[auto-spaced units]
-	\[20\unit{unis="\frac{V}{m^2}", foo="bar", biz="bad
-	,
-	stupid="these args"}\]
+	\[20\unit{unit="\frac{V}{m^2}"}\]
+\item[Integral macro]
+	\[\integral{expr="f(x)", wrt=x, lower=l, upper=u}\]
 \end{description}
 

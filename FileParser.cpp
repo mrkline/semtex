@@ -5,33 +5,34 @@
 #include <boost/regex.hpp>
 #include <cstring>
 #include <fstream>
+#include <unordered_set>
 
 #include "ErrorHandling.hpp"
 #include "Exceptions.hpp"
 #include "Context.hpp"
+#include "IntegralReplacer.hpp"
 #include "UnitReplacer.hpp"
 
 static const size_t kInputLen = strlen("\\input"); //!< Length of "\input"
 static const size_t kIncludeLen = strlen("\\include"); //! Length of "\include"
 static std::array<const std::string, 3> extensions = {{".stex", ".sex", ".tex"}};
+static std::unordered_set<std::string> trueStrings = {{"true", "True", "TRUE", "t", "T", "y", "Y", "yes", "Yes", "1"}};
+static std::unordered_set<std::string> falseStrings = {{"false", "False", "FALSE", "f", "F", "n", "N", "no", "No", "0"}};
 
-static std::vector<std::unique_ptr<Replacer>> replacers;
+static std::vector<Replacer*> replacers = {{new UnitReplacer, new IntegralReplacer}};
 
-//! Only needs to be run once. initialized doesn't need to be atomic because the main thread will always run this.
-static void init()
+bool stringRepresentsTrue(const std::string& str)
 {
-	static bool initialized = false;
-	if (initialized)
-		return;
+	return trueStrings.find(str) != trueStrings.end();
+}
 
-	replacers.emplace_back(new UnitReplacer);
-	initialized = true;
+bool stringRepresentsFalse(const std::string& str)
+{
+	return falseStrings.find(str) != trueStrings.end();
 }
 
 void processFile(const std::string& file, Context& ctxt)
 {
-	init();
-
 	if (ctxt.verbose && !ctxt.error)
 		printf("Processing %s...\n", file.c_str());
 
