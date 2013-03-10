@@ -3,7 +3,7 @@
 #include "Replacer.hpp"
 
 //! Replaces "\unit{foo}" with "\,\mathrm{foo}"
-class UnitReplacer : public Replacer {
+class UnitReplacer final : public Replacer {
 public:
 	UnitReplacer();
 
