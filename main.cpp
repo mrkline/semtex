@@ -115,7 +115,9 @@ int main(int argc, char** argv) {
 	if (!keepFlag.getValue() && !preOnlyFlag.getValue()) {
 		std::lock_guard<std::mutex> genLock(ctxt.generatedFilesMutex);
 		for (const std::string& f : ctxt.generatedFiles) {
-			printf("Removing intermediate LaTeX file %s\n", f.c_str());
+			if (ctxt.verbose)
+				printf("Removing intermediate LaTeX file %s\n", f.c_str());
+
 			boost::filesystem::remove(f);
 		}
 	}
