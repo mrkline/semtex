@@ -5,8 +5,8 @@
 #include <boost/regex.hpp>
 #include <cstring>
 #include <fstream>
-#include <sstream>
 
+#include "ErrorHandling.hpp"
 #include "Exceptions.hpp"
 #include "Context.hpp"
 #include "UnitReplacer.hpp"
@@ -193,10 +193,7 @@ void processInclude(ParseInfo& pi)
 
 	// We should only have one unnamed arg
 	if (args->unnamed.size() != 1 || args->named.size() != 0) {
-		std::stringstream err;
-		err << pi.filename << ":" << pi.currLine << ": ";
-		err << "\\include and \\input only take a single, unnamed argument";
-		throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
+		errorOnLine(pi, "\\include and \\input only take a single, unnamed argument");
 	}
 
 	std::string filename = args->unnamed[0];
@@ -236,17 +233,11 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 		eatWhitespace(pi);
 	}
 
-	if (pi.curr >= pi.end) {
-		std::stringstream err;
-		err << pi.filename << ":" << pi.currLine << ": End of file reached before finding arguments";
-		throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
-	}
+	if (pi.curr >= pi.end)
+		errorOnLine(pi, "End of file reached before finding arguments");
 
-	if (*pi.curr != '{') {
-		std::stringstream err;
-		err << pi.filename << ":" << pi.currLine << ": Bad argument list";
-		throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
-	}
+	if (*pi.curr != '{')
+		errorOnLine(pi, "Bad argument list");
 
 	++pi.curr;
 
@@ -259,12 +250,8 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 		if (readNewline(pi)) {
 			eatWhitespace(pi);
 			// We cannot have two newlines in a row during an argument list. Make sure we don't get another
-			if (readNewline(pi)) {
-				std::stringstream err;
-				err << pi.filename << ":" << pi.currLine;
-				err << ": A new paragraph was found in the middle of the argument list";
-				throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
-			}
+			if (readNewline(pi))
+				errorOnLine(pi, "A new paragraph was found in the middle of the argument list");
 		}
 		// Prepare the string to pass to regex (the current line)
 		const char* argEnd = pi.curr + 1;
@@ -275,11 +262,9 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 		if (!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, quotedNamed)) {
 			std::string newArgName(argMatch[1].first, argMatch[1].second);
 			// Make sure this argument doesn't already exist
-			if (ret->named.find(newArgName) != ret->named.end()) {
-				std::stringstream err;
-				err << pi.filename << ":" << pi.currLine << ": Duplicate argument";
-				throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
-			}
+			if (ret->named.find(newArgName) != ret->named.end())
+				errorOnLine(pi, "Duplicate argument");
+
 			ret->named[newArgName] = std::string(argMatch[2].first, argMatch[2].second);
 			pi.curr = argMatch[0].second;
 			namedReached = true;
@@ -296,11 +281,9 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 		else if	(!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, unquotedNamed)) {
 			std::string newArgName(argMatch[1].first, argMatch[1].second);
 			// Make sure this argument doesn't already exist
-			if (ret->named.find(newArgName) != ret->named.end()) {
-				std::stringstream err;
-				err << pi.filename << ":" << pi.currLine << ": Duplicate argument";
-				throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
-			}
+			if (ret->named.find(newArgName) != ret->named.end())
+				errorOnLine(pi, "Duplicate argument");
+
 			ret->named[newArgName] = std::string(argMatch[2].first, argMatch[2].second);
 			pi.curr = argMatch[0].second;
 			namedReached = true;
@@ -318,9 +301,7 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			if (namedReached && argMatch[0].second == argEnd) {
 				// If this is the end of the line, yell at the user for putting an unnamed arg after a named one.
 				// If this is not at the end of the line, we will register the arg as invalid in the next iteration
-				std::stringstream err;
-				err << pi.filename << ":" << pi.currLine << ": All unnamed arguments must come before named ones";
-				throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
+				errorOnLine(pi, "All unnamed arguments must come before named ones");
 			}
 			ret->unnamed.emplace_back(argMatch[1].first, argMatch[1].second);
 			pi.curr = argMatch[0].second;
@@ -338,9 +319,7 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			if (namedReached && argMatch[0].second == argEnd) {
 				// If this is the end of the line, yell at the user for putting an unnamed arg after a named one.
 				// If this is not at the end of the line, we will register the arg as invalid in the next iteration
-				std::stringstream err;
-				err << pi.filename << ":" << pi.currLine << ": All unnamed arguments must come before named ones";
-				throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
+				errorOnLine(pi, "All unnamed arguments must come before named ones");
 			}
 			ret->unnamed.emplace_back(argMatch[1].first, argMatch[1].second);
 			pi.curr = argMatch[0].second;
@@ -361,19 +340,15 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			 * ,
 			 * "myArg2
 			 */
-			if (lastTokenWasComma) {
-				std::stringstream err;
-				err << pi.filename << ":" << pi.currLine << ": Missing argument (double commas)";
-				throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
-			}
+			if (lastTokenWasComma)
+				errorOnLine(pi, "Missing argument (double commas)");
+
 			pi.curr = argMatch[0].second;
 			lastTokenWasComma = true;
 			needsCommaNext = false;
 		}
 		else {
-			std::stringstream err;
-			err << pi.filename << ":" << pi.currLine << ": Invalid argument";
-			throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
+			errorOnLine(pi, "Invalid argument");
 		}
 
 	}
