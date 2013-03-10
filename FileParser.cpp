@@ -308,7 +308,7 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			if (argMatch[2].matched) {
 				if (*argMatch[2].first == '}')
 					break;
-				lastTokenWasComma = *argMatch[3].first == ',';
+				lastTokenWasComma = *argMatch[2].first == ',';
 			}
 			else {
 				lastTokenWasComma = false;
@@ -326,7 +326,7 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			if (argMatch[2].matched) {
 				if (*argMatch[2].first == '}')
 					break;
-				lastTokenWasComma = *argMatch[3].first == ',';
+				lastTokenWasComma = *argMatch[2].first == ',';
 			}
 			else {
 				lastTokenWasComma = false;
