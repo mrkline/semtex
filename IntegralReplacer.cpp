@@ -33,21 +33,20 @@ void IntegralReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 	                { return acceptedArgs.find(t.first) == acceptedArgs.end(); }))
 		errorOnLine(pi, "Unknown argument for \\integral");
 
-	std::string expr;
-	std::string wrt;
-	std::string lower;
-	std::string upper;
+	std::string* expr = nullptr;
+	std::string* wrt = nullptr;
+	std::string* lower = nullptr;
+	std::string* upper = nullptr;
 
 	switch (args->unnamed.size()) {
 		case 4:
-			upper = args->unnamed[3];
+			upper = &args->unnamed[3];
 		case 3:
-			lower = args->unnamed[2];
+			lower = &args->unnamed[2];
 		case 2:
-			wrt = args->unnamed[1];
+			wrt = &args->unnamed[1];
 		case 1:
-			expr = args->unnamed[0];
-			break;
+			expr = &args->unnamed[0];
 	}
 
 	const auto& exprIt = args->named.find("expr");
@@ -58,38 +57,47 @@ void IntegralReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 	const auto& ei = args->named.end();
 
 	if (exprIt != ei) {
-		if (!expr.empty())
+		if (expr != nullptr)
 			errorOnLine(pi, "Duplicate expression argument for \\integral");
 		else
-			expr = exprIt->second;
+			expr = &exprIt->second;
 	}
 
-	if (expr.empty())
-		errorOnLine(pi, "Missing mandatory expression argument for \\integral");
-
 	if (wrtIt != ei) {
-		if (!wrt.empty())
+		if (wrt != nullptr)
 			errorOnLine(pi, "Duplicate \"with respect to\" argument for \\integral");
 		else
-			wrt = wrtIt->second;
+			wrt = &wrtIt->second;
 	}
 
 	if (lowerIt != ei) {
-		if (!lower.empty())
+		if (lower != nullptr)
 			errorOnLine(pi, "Duplicate lower bound argument for \\integral");
 		else
-			lower = lowerIt->second;
+			lower = &lowerIt->second;
 	}
 
 	if (upperIt != ei) {
-		if (!upper.empty())
+		if (upper != nullptr)
 			errorOnLine(pi, "Duplicate upper bound argument for \\integral");
 		else
-			upper = upperIt->second;
+			upper = &upperIt->second;
 	}
 
-	const char* end = pi.curr;
-	pi.replacements.emplace_back(start, end,
-	                             "\\int_{" + lower + "}^{" + upper + "}" + expr + "\\,\\mathrm{d}" + wrt);
+	if (expr == nullptr)
+		errorOnLine(pi, "Missing mandatory expression argument for \\integral");
 
+	std::string replacement = "\\int";
+	if (lower != nullptr)
+		replacement += "_{" + *lower + "}";
+
+	if (upper != nullptr)
+		replacement += "^{" + *upper + "}";
+
+	replacement += " " + *expr;
+
+	if (wrt != nullptr)
+		replacement += "\\,\\mathrm{d}" + *wrt;
+
+	pi.replacements.emplace_back(start, pi.curr, std::move(replacement));
 }
