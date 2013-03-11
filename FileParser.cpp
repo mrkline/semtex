@@ -114,8 +114,13 @@ void parseLoop(ParseInfo& pi, bool createReplacements)
 		// If it's not-whitespace, try to match it to an include
 		else if (isgraph(*pi.curr)) {
 			//! \todo Should we do this when recursing?
-			if (strncmp(pi.curr, "\\include", std::min(kIncludeLen, remaining)) == 0 ||
-				strncmp(pi.curr, "\\input", std::min(kInputLen, remaining)) == 0)
+			if ((remaining > kIncludeLen && // There are enough remaining characters to be our key
+			     strncmp(pi.curr, "\\include", kIncludeLen) == 0 && // These characters match the key
+			     (pi.curr[kIncludeLen] == '{' || isspace(pi.curr[kIncludeLen]))) // This is not just part of a key
+			    ||
+				(remaining > kInputLen &&
+			     strncmp(pi.curr, "\\input", kInputLen) == 0 &&
+			     (pi.curr[kInputLen] == '{' || isspace(pi.curr[kInputLen]))))
 				processInclude(pi);
 			// Otherwise try to match it to a mapping
 			else {
@@ -125,7 +130,9 @@ void parseLoop(ParseInfo& pi, bool createReplacements)
 				if (createReplacements) { // Don't bother doing search and replace for files we won't modify
 					for (const auto& r : replacers) {
 						for (const auto& k : r->getKeys()) {
-							if (strncmp(pi.curr, k.c_str(), std::min(k.length(), remaining)) == 0) {
+							if (remaining > k.length() && // There are enough remaining characters to be our key
+							    strncmp(pi.curr, k.c_str(), k.length()) == 0 && // These characters match the key
+							    (pi.curr[k.length()] == '{' || isspace(pi.curr[k.length()]))) { // Not just part of key
 								matched = true;
 								shouldRecurse = r->shouldRecurse();
 								line = pi.currLine;
