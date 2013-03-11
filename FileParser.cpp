@@ -57,50 +57,7 @@ void processFile(const std::string& file, Context& ctxt)
 		createModdedCopy = true;
 
 	ParseInfo pi(file, fileBuff.get(), fileBuff.get() + fileSize, ctxt);
-	while (pi.curr < pi.end) {
-		// Characters to the end of the file
-		const size_t remaining = pi.end - pi.curr;
-
-		// Ignore commented-out lines
-		if (pi.curr > fileBuff.get() && *pi.curr == '%' && *(pi.curr - 1) != '\\') {
-			while (pi.curr < pi.end && *pi.curr != '\n' && *pi.curr != '\r')
-				++pi.curr;
-			readNewline(pi);
-		}
-		// If it's not-whitespace, try to match it to an include
-		else if (isgraph(*pi.curr)) {
-			if (strncmp(pi.curr, "\\include", std::min(kIncludeLen, remaining)) == 0 ||
-				strncmp(pi.curr, "\\input", std::min(kInputLen, remaining)) == 0)
-				processInclude(pi);
-			// Otherwise try to match it to a mapping
-			else {
-				bool matched = false;
-				if (createModdedCopy) { // Don't bother doing search and replace for files we won't modify
-					for (const auto& r : replacers) {
-						for (const auto& k : r->getKeys()) {
-							if (strncmp(pi.curr, k.c_str(), std::min(k.length(), remaining)) == 0) {
-								r->replace(k, pi);
-								matched = true;
-								break;
-							}
-						}
-						if (matched)
-							break;
-					}
-
-					//! \todo Recurse here. If a new replacement was made, create a ParsInfo for the replacement
-					//        And scan through it. Repeat until no more replacements are found in the replacement.
-				}
-				if (!matched)
-					++pi.curr; // Try again next time
-			}
-		}
-		// Otherwise just chomp some whitespace
-		else {
-			while (readNewline(pi));
-			eatWhitespace(pi);
-		}
-	}
+	parseLoop(pi, createModdedCopy);
 
 	if (ctxt.verbose && !ctxt.error)
 		printf("Done processing %s...\n", file.c_str());
@@ -138,6 +95,80 @@ void processFile(const std::string& file, Context& ctxt)
 		}
 		if (ctxt.verbose && !ctxt.error) // Fairly safe to skip another error check here since we just checked
 			printf("Done writing out LaTeX file for %s...\n", file.c_str());
+	}
+}
+
+void parseLoop(ParseInfo& pi, bool createReplacements)
+{
+	const char* const first = pi.curr;
+	while (pi.curr < pi.end) {
+		// Characters to the end of the file
+		const size_t remaining = pi.end - pi.curr;
+
+		// Ignore commented-out lines
+		if (pi.curr > first && *pi.curr == '%' && *(pi.curr - 1) != '\\') {
+			while (pi.curr < pi.end && *pi.curr != '\n' && *pi.curr != '\r')
+				++pi.curr;
+			readNewline(pi);
+		}
+		// If it's not-whitespace, try to match it to an include
+		else if (isgraph(*pi.curr)) {
+			//! \todo Should we do this when recursing?
+			if (strncmp(pi.curr, "\\include", std::min(kIncludeLen, remaining)) == 0 ||
+				strncmp(pi.curr, "\\input", std::min(kInputLen, remaining)) == 0)
+				processInclude(pi);
+			// Otherwise try to match it to a mapping
+			else {
+				bool matched = false;
+				bool shouldRecurse;
+				int line;
+				if (createReplacements) { // Don't bother doing search and replace for files we won't modify
+					for (const auto& r : replacers) {
+						for (const auto& k : r->getKeys()) {
+							if (strncmp(pi.curr, k.c_str(), std::min(k.length(), remaining)) == 0) {
+								matched = true;
+								shouldRecurse = r->shouldRecurse();
+								line = pi.currLine;
+								r->replace(k, pi);
+								break;
+							}
+						}
+						if (matched)
+							break;
+					}
+
+					// Recurse here. If a new replacement was made, create a ParsInfo for the replacement
+					// and scan through it. Repeat until no more replacements are found in the replacement.
+					if (matched && shouldRecurse) {
+						const std::string& toSubSearch = pi.replacements.back().replaceWith;
+						const char* subStart = toSubSearch.c_str();
+						const char* subEnd = subStart + toSubSearch.size();
+						ParseInfo rpi(pi.filename, subStart, subEnd, pi.ctxt, line);
+						parseLoop(rpi, true); // Recurse using our new context
+						if (!rpi.replacements.empty()) {
+							std::string newRep;
+							const char* curr = subStart;
+							for (const auto& r : rpi.replacements) {
+								// Write from the current location up to the start of the replacement
+								newRep.append(curr, r.start);
+								// Write the replacement
+								newRep.append(r.replaceWith);
+								curr = r.end;
+							}
+							newRep.append(curr, rpi.end);
+							pi.replacements.back().replaceWith = std::move(newRep);
+						}
+					}
+				}
+				if (!matched)
+					++pi.curr; // Try again next time
+			}
+		}
+		// Otherwise just chomp some whitespace
+		else {
+			while (readNewline(pi));
+			eatWhitespace(pi);
+		}
 	}
 }
 

@@ -11,7 +11,7 @@ class Context;
 struct Replacement {
 	const char* start = nullptr; //!< Where to start the replacement
 	const char* end = nullptr; //!< One byte past the end of the string to be replaced
-	const std::string replaceWith; //!< Immutable replacement string
+	std::string replaceWith; //!< Immutable replacement string
 
 	Replacement(const char* s, const char* e, std::string&& r)
 		: start(s), end(e), replaceWith(r)
@@ -39,8 +39,8 @@ struct ParseInfo {
 	//! \todo Would a linked list run faster?
 	std::vector<Replacement> replacements;
 
-	ParseInfo(const std::string& file, const char* current, const char* end, Context& context)
-		: filename(file), curr(current), end(end), currLine(1),
+	ParseInfo(const std::string& file, const char* current, const char* end, Context& context, int startingLine = 1)
+		: filename(file), curr(current), end(end), currLine(startingLine),
 		  unixNewlines(0), windowsNewlines(0), macNewlines(0), ctxt(context)
 	{ }
 };
@@ -58,6 +58,9 @@ bool stringRepresentsFalse(const std::string& str);
  * \param context The global context (verbosity level, queues, etc.)
  */
 void processFile(const std::string& filename, Context& ctxt);
+
+//! The loop that pareses through an entire character sequence specified by the provided ParseInfo
+void parseLoop(ParseInfo& pi, bool createReplacements);
 
 //! Reads tabs and spaces until a non-whitespace character or a newline is hit
 inline void eatWhitespace(ParseInfo& pi)
