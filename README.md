@@ -35,13 +35,15 @@ SemTeX is a preprocessor for LaTeX which intends to make creating LaTeX document
 
 The following would expand into a Graphviz graph:
 
-	\begin{dot}
-	graph foo {
-		foo -> bar;
-		foo -> baz;
-		baz -> biz;
-	}
-	\end{dot}
+```latex
+\begin{dot}
+graph foo {
+	foo -> bar;
+	foo -> baz;
+	baz -> biz;
+}
+\end{dot}
+```
 
 Options could be provided to determine whether the graph should be rendered with `dot` or with `dot2tex`, etc.
 
@@ -51,10 +53,12 @@ Options could be provided to determine whether the graph should be rendered with
 
 - Piecewise function definition:
 
-	\begin{piecewise}{y(x) = }
-	\piece{0, -\infty \leq x \leq 0}
-	\piece{2x, x > 0}
-	\end{piecewise}
+```latex
+\begin{piecewise}{y(x) = }
+\piece{0, -\infty \leq x \leq 0}
+\piece{2x, x > 0}
+\end{piecewise}
+```
 
 - Automatically expand vertical space as needed in `array` tables (e.g. if a row contains `\frac`)
 
