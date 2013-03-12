@@ -5,6 +5,6 @@
 \item[Integral macro]
 	\[\integral{expr="f(x)", wrt=x, lower=l, upper=u}\]
 \item[Recursive macros]
-	\[\integral{expr="f(x)", wrt=x}\]
+	\[\integral{expr="f(x) \unit{V}", wrt=x}\]
 \end{description}
 
