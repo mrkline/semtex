@@ -58,6 +58,18 @@ Options could be provided to determine whether the graph should be rendered with
 
 - Automatically expand vertical space as needed in `array` tables (e.g. if a row contains `\frac`)
 
+## Dependencies
+
+To run SemTeX:
+- LaTeX (specifically pdflatex)
+- LaTeX math packages (usually provided by the `texlive-extra` package)
+
+To compile SemTeX:
+- A compiler that supports (a good chunk of) C++11
+- [Boost](http://www.boost.org/) (used for `boost::regex` and `boost::filesystem`).
+  I planned on using `std::regex` but gcc has yet to provide a working implementation.
+- [TCLAP](http://tclap.sourceforge.net/) (a small C++ command line argument parser)
+
 ## Motivation
 
 ### Why?
