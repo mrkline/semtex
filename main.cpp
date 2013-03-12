@@ -96,14 +96,19 @@ int main(int argc, char** argv) {
 	if (!ctxt.error) {
 		if (!preOnlyFlag.getValue()) {
 			if (ctxt.verbose)
-				printf("Running pdflatex\n");
+				printf("Running pdflatex...\n");
 
 			//! \todo Move this into a function? This is the second place we use it
 			boost::regex fext(R"regex((stex|sex)$)regex", boost::regex::optimize);
 			const std::string texname = boost::regex_replace(fileArg.getValue(), fext, "tex");
 
-			// TODO: handle pdflatex automatically instead of just calling it
+			fflush(stdout); // Make sure everything prints before LaTeX does
+
+			// TODO: handle pdflatex I/O instead of just calling it
 			system(("pdflatex " + texname).c_str());
+
+			if (ctxt.verbose)
+				printf("pdflatex exited.\n");
 		}
 	}
 	else
