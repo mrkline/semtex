@@ -45,11 +45,15 @@ struct ParseInfo {
 	{ }
 };
 
-//! Returns true for strings like "true", "True", "TRUE", "t", "T", "y", "Y", "yes", "Yes", "1"
-bool stringRepresentsTrue(const std::string& str);
-
-//! Returns true for strings like "false", "False", "FALSE", "f", "F", "n", "N", "no", "No", "0"
-bool stringRepresentsFalse(const std::string& str);
+/*!
+ * \brief Used to parse a true or false value (usually from an argument)
+ * \param pi Used to get the current line number for possible error reporting
+ * \param str The string to examine
+ * \returns true for strings like "true", "True", "TRUE", "t", "T", "y", "Y", "yes", "Yes", "1", or
+ *          false for strings like "false", "False", "FALSE", "f", "F", "n", "N", "no", "No", "0"
+ * \throws InvalidInputException if the string matches neither of these groups
+ */
+bool getStringTruthValue(const ParseInfo& pi, const std::string& str);
 
 /*!
  * \brief Processes a SemTeX file, generating a corresponding LaTeX file and adding included SemTeX files

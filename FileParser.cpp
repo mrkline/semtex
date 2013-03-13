@@ -21,14 +21,17 @@ static std::unordered_set<std::string> falseStrings = {{"false", "False", "FALSE
 
 static std::vector<Replacer*> replacers = {{new UnitReplacer, new IntegralReplacer}};
 
-bool stringRepresentsTrue(const std::string& str)
+bool getStringTruthValue(const ParseInfo& pi, const std::string& str)
 {
-	return trueStrings.find(str) != trueStrings.end();
-}
+	if (trueStrings.find(str) != trueStrings.end())
+		return true;
+	else if (falseStrings.find(str) != falseStrings.end())
+		return false;
+	else
+		errorOnLine(pi, "Unknown value for boolean argument");
 
-bool stringRepresentsFalse(const std::string& str)
-{
-	return falseStrings.find(str) != trueStrings.end();
+	// Make the compiler shut up about control reaching the end ofa a non-void function
+	return false;
 }
 
 void processFile(const std::string& file, Context& ctxt)

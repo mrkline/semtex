@@ -7,7 +7,7 @@
 #include "Exceptions.hpp"
 #include "FileParser.hpp"
 
-static std::unordered_set<std::string> acceptedArgs = {{"expr", "wrt", "lower", "upper"}};
+static std::unordered_set<std::string> acceptedArgs = {{"expr", "wrt", "lower", "upper", "inf"}};
 
 IntegralReplacer::IntegralReplacer()
 	: Replacer({"\\integral"})
@@ -37,6 +37,7 @@ void IntegralReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 	std::string* wrt = nullptr;
 	std::string* lower = nullptr;
 	std::string* upper = nullptr;
+	bool inf = false;
 
 	switch (args->unnamed.size()) {
 		case 4:
@@ -53,6 +54,7 @@ void IntegralReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 	const auto& wrtIt = args->named.find("wrt");
 	const auto& lowerIt = args->named.find("lower");
 	const auto& upperIt = args->named.find("upper");
+	const auto& infIt = args->named.find("inf");
 
 	const auto& ei = args->named.end();
 
@@ -84,15 +86,28 @@ void IntegralReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 			upper = &upperIt->second;
 	}
 
+	if (infIt != ei) {
+		try {
+			inf = getStringTruthValue(pi, infIt->second);
+		}
+		catch (const Exceptions::InvalidInputException& ex) {
+			throw Exceptions::InvalidInputException(ex.message + " \"inf\" in \\integral", __FUNCTION__);
+		}
+	}
+
 	if (expr == nullptr)
 		errorOnLine(pi, "Missing mandatory expression argument for \\integral");
 
 	std::string replacement = "\\int";
 	if (lower != nullptr)
 		replacement += "_{" + *lower + "}";
+	else if (inf)
+		replacement += "_{-\\infty}";
 
 	if (upper != nullptr)
 		replacement += "^{" + *upper + "}";
+	else if (inf)
+		replacement += "^{\\infty}";
 
 	replacement += " " + *expr;
 

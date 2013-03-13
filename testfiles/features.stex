@@ -3,7 +3,7 @@
 \item[auto-spaced units]
 	\[20\unit{unit="\frac{V}{m^2}"}\]
 \item[Integral macro]
-	\[\integral{expr="f(x)", wrt=x, lower=l, upper=u}\]
+	\[\integral{expr="f(x)", wrt=x, lower=l, inf=1}\]
 \item[Recursive macros]
 	\[\integral{expr="f(x) \unit{V}", wrt=x}\]
 \end{description}
