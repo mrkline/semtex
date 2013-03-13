@@ -13,7 +13,7 @@ SemTeX is a preprocessor for LaTeX which intends to make creating LaTeX document
 - Arguments have optional names, e.g. `\macroname{arg1=one, arg2="two{foo}"}`
 - Some macros have optional arguments. For example, the macro to create an integral `\integral`, has an optional
   `inf` argument that, when set to some form of true (`true`, `1`, `t`, etc.), fills in the bounds with infinity.  
-  (i.e. `\integral{f(x), x, inf=t}` becomes `\integral_{-\infty}^{\infty} ...`)
+  (i.e. `\integral{f(x), x, inf=t}` becomes `\int_{-\infty}^{\infty} ...`)
 
 - All unnamed arguments must go before named ones. Named arguments can be presented in any order.
 
