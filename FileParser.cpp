@@ -11,6 +11,7 @@
 #include "Exceptions.hpp"
 #include "Context.hpp"
 #include "IntegralReplacer.hpp"
+#include "SummationReplacer.hpp"
 #include "UnitReplacer.hpp"
 
 static const size_t kInputLen = strlen("\\input"); //!< Length of "\input"
@@ -19,7 +20,7 @@ static std::array<const std::string, 3> extensions = {{".stex", ".sex", ".tex"}}
 static std::unordered_set<std::string> trueStrings = {{"true", "True", "TRUE", "t", "T", "y", "Y", "yes", "Yes", "1"}};
 static std::unordered_set<std::string> falseStrings = {{"false", "False", "FALSE", "f", "F", "n", "N", "no", "No", "0"}};
 
-static std::vector<Replacer*> replacers = {{new UnitReplacer, new IntegralReplacer}};
+static std::vector<Replacer*> replacers = {{new UnitReplacer, new IntegralReplacer, new SummationReplacer}};
 
 bool getStringTruthValue(const ParseInfo& pi, const std::string& str)
 {
