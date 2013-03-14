@@ -10,6 +10,7 @@
 #include "ErrorHandling.hpp"
 #include "Exceptions.hpp"
 #include "Context.hpp"
+#include "DerivReplacer.hpp"
 #include "IntegralReplacer.hpp"
 #include "SummationReplacer.hpp"
 #include "UnitReplacer.hpp"
@@ -20,7 +21,8 @@ static std::array<const std::string, 3> extensions = {{".stex", ".sex", ".tex"}}
 static std::unordered_set<std::string> trueStrings = {{"true", "True", "TRUE", "t", "T", "y", "Y", "yes", "Yes", "1"}};
 static std::unordered_set<std::string> falseStrings = {{"false", "False", "FALSE", "f", "F", "n", "N", "no", "No", "0"}};
 
-static std::vector<Replacer*> replacers = {{new UnitReplacer, new IntegralReplacer, new SummationReplacer}};
+static std::vector<Replacer*> replacers = {{new UnitReplacer, new IntegralReplacer,
+                                            new SummationReplacer, new DerivReplacer}};
 
 bool getStringTruthValue(const ParseInfo& pi, const std::string& str)
 {

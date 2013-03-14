@@ -27,6 +27,8 @@ SemTeX is a preprocessor for LaTeX which intends to make creating LaTeX document
   Both can take an "inf" argument which will output `\int_{\infty}^{\infty}` and `\sum_{\infty}^{\infty}`, respectively,
   if true
 
+- `\deriv{wrt=x, of=y, n=2}` expands to `\frac{\mathrm{d}^{2}y}{\mathrm{d}x^{2}}`
+
 - `\->` expands to `\rightarrow`, `\=>` expands to `\Rightarrow`, `\<=>` expands to `\Leftrightarrow`, etc.
 
 - `\unit{u=mV}` expands to `\,\mathrm{mV}`.

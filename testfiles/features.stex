@@ -8,6 +8,8 @@
 	\[\integral{expr="f(x)", wrt=x, from=l, inf=1}\]
 \item[Summation macro]
 	\[\summ{expr="x[k]", wrt=k, to=n, inf=1}\]
+\item[Derivative macro]
+	\[\deriv{wrt=x, of=y, n=2}\]
 %\item[Recursive macros]
 %	\[\integral{expr="f(x) \summ{expr="g[n]", wrt=n, inf=1}", wrt=x}\]
 \end{description}
