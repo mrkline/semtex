@@ -7,7 +7,7 @@
 #include "Exceptions.hpp"
 #include "FileParser.hpp"
 
-static std::unordered_set<std::string> acceptedArgs = {{"expr", "wrt", "lower", "upper", "inf"}};
+static std::unordered_set<std::string> acceptedArgs = {{"expr", "wrt", "from", "to", "inf"}};
 
 SummationReplacer::SummationReplacer()
 	: Replacer({"\\summ"})
@@ -52,8 +52,8 @@ void SummationReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 
 	const auto& exprIt = args->named.find("expr");
 	const auto& wrtIt = args->named.find("wrt");
-	const auto& lowerIt = args->named.find("lower");
-	const auto& upperIt = args->named.find("upper");
+	const auto& lowerIt = args->named.find("from");
+	const auto& upperIt = args->named.find("to");
 	const auto& infIt = args->named.find("inf");
 
 	const auto& ei = args->named.end();
