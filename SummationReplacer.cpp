@@ -102,6 +102,8 @@ void SummationReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 		replacement += "_{" + (wrt != nullptr ? *wrt + "=" : "") + *lower + "}";
 	else if (inf)
 		replacement += "_{"+ (wrt != nullptr ? *wrt + "=" : "") + "-\\infty}";
+	else if (wrt != nullptr)
+		replacement += "_{" + *wrt + "}";
 
 	if (upper != nullptr)
 		replacement += "^{" + *upper + "}";
