@@ -1,6 +1,5 @@
 #include "IntegralReplacer.hpp"
 
-#include <algorithm>
 #include <unordered_set>
 
 #include "ErrorHandling.hpp"
@@ -28,10 +27,10 @@ void IntegralReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 	if (args->unnamed.size() > 4)
 		errorOnLine(pi, "Incorrect number of unnamed arguments for \\integral");
 
-	if (std::any_of(args->named.begin(), args->named.end(),
-	                [](const decltype(args->named)::value_type& t)
-	                { return acceptedArgs.find(t.first) == acceptedArgs.end(); }))
-		errorOnLine(pi, "Unknown argument for \\integral");
+	for (const auto& arg : args->named) {
+		if (acceptedArgs.find(arg.first) == acceptedArgs.end())
+			errorOnLine(pi, "Unknown argument \"" + arg.first + "\" for \\integral");
+	}
 
 	std::string* expr = nullptr;
 	std::string* wrt = nullptr;

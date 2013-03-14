@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <sstream>
 
 #include "Exceptions.hpp"
@@ -10,7 +11,7 @@
  * \param pi The ParseInfo for the file, used to get the file name and line
  * \param msg The error-specific message to attach to the exception
  */
-inline void errorOnLine(const ParseInfo& pi, const char* msg)
+inline void errorOnLine(const ParseInfo& pi, const std::string& msg)
 {
 		std::stringstream err;
 		err << pi.filename << ":" << pi.currLine << ": " << msg;
