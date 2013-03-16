@@ -16,7 +16,7 @@
 #include "UnitReplacer.hpp"
 
 static const size_t kInputLen = strlen("\\input"); //!< Length of "\input"
-static const size_t kIncludeLen = strlen("\\include"); //! Length of "\include"
+static const size_t kIncludeLen = strlen("\\include"); //!< Length of "\include"
 static std::array<const std::string, 3> extensions = {{".stex", ".sex", ".tex"}};
 static std::unordered_set<std::string> trueStrings = {{"true", "True", "TRUE", "t", "T", "y", "Y", "yes", "Yes", "1"}};
 static std::unordered_set<std::string> falseStrings = {{"false", "False", "FALSE", "f", "F", "n", "N", "no", "No", "0"}};

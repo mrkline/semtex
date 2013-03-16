@@ -10,8 +10,6 @@ class ProcessorThread {
 public:
 	static const std::chrono::milliseconds dequeueTimeout;
 
-	//! Constructor
-	//! \param sfq Queue from which to pull files to process
 	ProcessorThread(Context& context);
 
 	bool isBusy() const { return busy; }

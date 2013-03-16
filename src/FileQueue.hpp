@@ -15,7 +15,7 @@ public:
 	typedef void (*QueueUsedCallback)(FileQueue& q);
 
 	//! Constructor
-	//! \param cb A callback to issue if there is more than one file in the queue.
+	//! \param call A callback to issue if there is more than one file in the queue.
 	FileQueue(QueueUsedCallback call);
 
 	//! Enqueue a file to be processed

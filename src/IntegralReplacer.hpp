@@ -2,7 +2,7 @@
 
 #include "Replacer.hpp"
 
-//! Replaces \integral{<args>} with a properly formatted LaTeX integral
+//! Replaces \\integral{args} with a properly formatted LaTeX integral
 class IntegralReplacer final : public Replacer {
 public:
 	IntegralReplacer();

@@ -59,7 +59,7 @@ bool getStringTruthValue(const ParseInfo& pi, const std::string& str);
  * \brief Processes a SemTeX file, generating a corresponding LaTeX file and adding included SemTeX files
  *        to the queue
  * \param filename The path of the SemTeX file to process
- * \param context The global context (verbosity level, queues, etc.)
+ * \param ctxt The global context (verbosity level, queues, etc.)
  */
 void processFile(const std::string& filename, Context& ctxt);
 
@@ -77,12 +77,12 @@ inline void eatWhitespace(ParseInfo& pi)
 //! \returns true if a newline was read
 bool readNewline(ParseInfo& pi);
 
-//! Called when we hit a \include or \input
-//! When the function returns, pi.curr is moved past the \include statement
+//! Called when we hit a \\include or \\input
+//! When the function returns, pi.curr is moved past the \\include statement
 void processInclude(ParseInfo& pi);
 
 /*!
- * \brief Parses SemTeX args (e.g. \macro{args}).
+ * \brief Parses SemTeX args (e.g. \\macro{args}).
  * \returns A heap-allocated MacroArgs struct containing the arguments
  * \todo Would stack allocation be better?
  *

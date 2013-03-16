@@ -2,7 +2,7 @@
 
 #include "Replacer.hpp"
 
-//! Replaces \integral{<args>} with a properly formatted LaTeX integral
+//! Replaces \\summ{args} with a properly formatted LaTeX summation
 class SummationReplacer final : public Replacer {
 public:
 	SummationReplacer();
