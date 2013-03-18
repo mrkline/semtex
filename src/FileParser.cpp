@@ -192,7 +192,7 @@ bool readNewline(ParseInfo& pi)
 
 	if (*pi.curr == '\n' || *pi.curr == '\r') {
 		if (*pi.curr == '\r') {
-			if (*(pi.curr + 1) == '\n') {
+			if (pi.curr < pi.end - 1 && *(pi.curr + 1) == '\n') {
 				++pi.windowsNewlines;
 				pi.curr +=2;
 			}
@@ -203,7 +203,7 @@ bool readNewline(ParseInfo& pi)
 		}
 
 		if (*pi.curr == '\n') {
-			if (*(pi.curr + 1) == '\r') {
+			if (pi.curr < pi.end - 1 && *(pi.curr + 1) == '\r') {
 				// Rare, but possible
 				++pi.windowsNewlines;
 				pi.curr +=2;
