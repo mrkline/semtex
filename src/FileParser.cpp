@@ -15,14 +15,16 @@
 #include "SummationReplacer.hpp"
 #include "UnitReplacer.hpp"
 
-static const size_t kInputLen = strlen("\\input"); //!< Length of "\input"
-static const size_t kIncludeLen = strlen("\\include"); //!< Length of "\include"
-static std::array<const std::string, 3> extensions = {{".stex", ".sex", ".tex"}};
-static std::unordered_set<std::string> trueStrings = {{"true", "True", "TRUE", "t", "T", "y", "Y", "yes", "Yes", "1"}};
-static std::unordered_set<std::string> falseStrings = {{"false", "False", "FALSE", "f", "F", "n", "N", "no", "No", "0"}};
+namespace { // Ensure these variables are accessible only within this file.
+	const size_t kInputLen = strlen("\\input"); //!< Length of "\input"
+	const size_t kIncludeLen = strlen("\\include"); //!< Length of "\include"
+	std::array<const std::string, 3> extensions = {{".stex", ".sex", ".tex"}};
+	std::unordered_set<std::string> trueStrings = {{"true", "True", "TRUE", "t", "T", "y", "Y", "yes", "Yes", "1"}};
+	std::unordered_set<std::string> falseStrings = {{"false", "False", "FALSE", "f", "F", "n", "N", "no", "No", "0"}};
 
-static std::vector<Replacer*> replacers = {{new UnitReplacer, new IntegralReplacer,
-                                            new SummationReplacer, new DerivReplacer}};
+	std::vector<Replacer*> replacers = {{new UnitReplacer, new IntegralReplacer,
+	                                     new SummationReplacer, new DerivReplacer}};
+}
 
 bool getStringTruthValue(const ParseInfo& pi, const std::string& str)
 {

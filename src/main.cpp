@@ -17,9 +17,11 @@
 // Slightly kludgy, I know.
 void queueCallback(FileQueue& sfq);
 
-static bool threadsStarted = false;
-static std::vector<std::unique_ptr<ProcessorThread>> auxThreads;
-static Context ctxt(&queueCallback);
+namespace { // Ensure these variables are accessible only within this file.
+	bool threadsStarted = false;
+	std::vector<std::unique_ptr<ProcessorThread>> auxThreads;
+	Context ctxt(&queueCallback);
+}
 
 void queueCallback(FileQueue& sfq)
 {
