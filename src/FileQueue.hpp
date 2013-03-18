@@ -12,7 +12,7 @@ class FileQueue {
 public:
 	//! Callback to issue if there is more than one file in the queue.
 	//! This is likely a good indication to use multi-threading.
-	typedef void (*QueueUsedCallback)(FileQueue& q);
+	typedef void (*QueueUsedCallback)(const FileQueue& q);
 
 	//! Constructor
 	//! \param call A callback to issue if there is more than one file in the queue.
