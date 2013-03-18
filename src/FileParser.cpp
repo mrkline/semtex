@@ -22,8 +22,13 @@ namespace { // Ensure these variables are accessible only within this file.
 	std::unordered_set<std::string> trueStrings = {{"true", "True", "TRUE", "t", "T", "y", "Y", "yes", "Yes", "1"}};
 	std::unordered_set<std::string> falseStrings = {{"false", "False", "FALSE", "f", "F", "n", "N", "no", "No", "0"}};
 
-	std::vector<Replacer*> replacers = {{new UnitReplacer, new IntegralReplacer,
-	                                     new SummationReplacer, new DerivReplacer}};
+	namespace Replacers {
+		UnitReplacer ur;
+		IntegralReplacer ir;
+		SummationReplacer sr;
+		DerivReplacer dr;
+	}
+	std::array<Replacer*, 4> replacers = {{&Replacers::ur, &Replacers::ir, &Replacers::sr, &Replacers::dr}};
 }
 
 bool getStringTruthValue(const ParseInfo& pi, const std::string& str)
