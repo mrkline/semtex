@@ -37,11 +37,11 @@ void DerivReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 
 	switch (args->unnamed.size()) {
 		case 3:
-			n = &args->unnamed[3];
+			n = &args->unnamed[2];
 		case 2:
-			of = &args->unnamed[2];
+			of = &args->unnamed[1];
 		case 1:
-			wrt = &args->unnamed[1];
+			wrt = &args->unnamed[0];
 	}
 
 	const auto wrtIt = args->named.find("wrt");
