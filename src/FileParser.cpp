@@ -235,20 +235,20 @@ void processInclude(ParseInfo& pi)
 	pi.curr += isInclude ? kIncludeLen : kInputLen;
 
 	//! Get our args
-	std::unique_ptr<MacroArgs> args;
+	std::unique_ptr<std::vector<std::string>> args;
 	try {
-		args = parseArgs(pi);
+		args = parseBracketArgs(pi);
 	}
 	catch (const Exceptions::InvalidInputException& ex) {
 		throw Exceptions::InvalidInputException(ex.message + " for \\include or \\import", __FUNCTION__);
 	}
 
-	// We should only have one unnamed arg
-	if (args->unnamed.size() != 1 || args->named.size() != 0) {
+	// We should only have one arg
+	if (args->size() != 1) {
 		errorOnLine(pi, "\\include and \\input only take a single, unnamed argument");
 	}
 
-	std::string filename = args->unnamed[0];
+	const std::string& filename = (*args)[0];
 
 	for (const auto& ext : extensions) {
 		std::string fullName = filename + ext;
@@ -262,25 +262,25 @@ void processInclude(ParseInfo& pi)
 	}
 }
 
-std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
+std::unique_ptr<MacroOptions> parseMacroOptions(ParseInfo& pi) {
 	// Regex for matching args
 
-	//! An unquoted, unnamed arg, such as { myArg }
-	static boost::regex unquoted(R"regex(^\s*([^"=,}]*\s*[^"=,}\s]+)\s*(,|\})?)regex", boost::regex::optimize);
-	//! A quoted, unnamed arg, such as { "myArg" }
-	static boost::regex quoted(R"regex(^\s*"([^"]+)"\s*(,|\})?)regex", boost::regex::optimize);
-	//! An unquoted, named arg, sugh as { foo = bar }
-	static boost::regex unquotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*([^"=,}]*\s*[^"=,}\s]+)\s*(,|\})?)regex",
+	//! An unquoted, unnamed arg, such as [ myArg ]
+	static boost::regex unquoted(R"regex(^\s*([^"=,\]]*\s*[^"=,\]\s]+)\s*(,|\])?)regex", boost::regex::optimize);
+	//! A quoted, unnamed arg, such as [ "myArg" ]
+	static boost::regex quoted(R"regex(^\s*"([^"]+)"\s*(,|\])?)regex", boost::regex::optimize);
+	//! An unquoted, named arg, sugh as [ foo = bar ]
+	static boost::regex unquotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*([^"=,\]]*\s*[^"=,\]\s]+)\s*(,|\])?)regex",
 	                                  boost::regex::optimize);
-	//! A quoted, named arg, sugh as { foo = "bar" }
-	static boost::regex quotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*"([^"]+)"\s*(,|\})?)regex", boost::regex::optimize);
+	//! A quoted, named arg, sugh as [ foo = "bar" ]
+	static boost::regex quotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*"([^"]+)"\s*(,|\])?)regex", boost::regex::optimize);
 	//! A comma, separating args
 	static boost::regex spacedComma(R"regex(^\s*,\s*)regex", boost::regex::optimize);
 
-	std::unique_ptr<MacroArgs> ret(new MacroArgs());
+	std::unique_ptr<MacroOptions> ret(new MacroOptions());
 
 	eatWhitespace(pi);
-	// Accept one newline and more whitespace, then demand a {
+	// Accept one newline and more whitespace, then demand a [
 	if (readNewline(pi)) {
 		eatWhitespace(pi);
 	}
@@ -288,22 +288,21 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 	if (pi.curr >= pi.end)
 		errorOnLine(pi, "End of file reached before finding arguments");
 
-	if (*pi.curr != '{')
-		errorOnLine(pi, "Bad argument list");
+	if (*pi.curr != '[')
+		return ret;
 
 	++pi.curr;
 
 	// Argument parsing loop
-	bool namedReached = false; //Becomes true when named arguments are reached
 	bool needsCommaNext = false;
 	bool lastTokenWasComma = false;
 	while (true) {
 		eatWhitespace(pi);
 		if (readNewline(pi)) {
 			eatWhitespace(pi);
-			// We cannot have two newlines in a row during an argument list. Make sure we don't get another
+			// We cannot have two newlines in a row during an option list. Make sure we don't get another
 			if (readNewline(pi))
-				errorOnLine(pi, "A new paragraph was found in the middle of the argument list");
+				errorOnLine(pi, "A new paragraph was found in the middle of the options list");
 		}
 		// Prepare the string to pass to regex (the current line)
 		const char* argEnd = pi.curr + 1;
@@ -313,15 +312,14 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 		boost::cmatch argMatch;
 		if (!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, quotedNamed)) {
 			std::string newArgName(argMatch[1].first, argMatch[1].second);
-			// Make sure this argument doesn't already exist
-			if (ret->named.find(newArgName) != ret->named.end())
-				errorOnLine(pi, "Duplicate argument");
+			// Make sure this option doesn't already exist
+			if (ret->opts.find(newArgName) != ret->opts.end())
+				errorOnLine(pi, "Duplicate option");
 
-			ret->named[newArgName] = std::string(argMatch[2].first, argMatch[2].second);
+			ret->opts[newArgName] = std::string(argMatch[2].first, argMatch[2].second);
 			pi.curr = argMatch[0].second;
-			namedReached = true;
 			if (argMatch[3].matched) {
-				if (*argMatch[3].first == '}')
+				if (*argMatch[3].first == ']')
 					break;
 				lastTokenWasComma = *argMatch[3].first == ',';
 			}
@@ -330,17 +328,16 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			}
 			needsCommaNext = !lastTokenWasComma;
 		}
-		else if	(!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, unquotedNamed)) {
+		else if (!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, unquotedNamed)) {
 			std::string newArgName(argMatch[1].first, argMatch[1].second);
-			// Make sure this argument doesn't already exist
-			if (ret->named.find(newArgName) != ret->named.end())
-				errorOnLine(pi, "Duplicate argument");
+			// Make sure this option doesn't already exist
+			if (ret->opts.find(newArgName) != ret->opts.end())
+				errorOnLine(pi, "Duplicate option");
 
-			ret->named[newArgName] = std::string(argMatch[2].first, argMatch[2].second);
+			ret->opts[newArgName] = std::string(argMatch[2].first, argMatch[2].second);
 			pi.curr = argMatch[0].second;
-			namedReached = true;
 			if (argMatch[3].matched) {
-				if (*argMatch[3].first == '}')
+				if (*argMatch[3].first == ']')
 					break;
 				lastTokenWasComma = *argMatch[3].first == ',';
 			}
@@ -350,15 +347,15 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			needsCommaNext = !lastTokenWasComma;
 		}
 		else if(!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, quoted)) {
-			if (namedReached && argMatch[0].second == argEnd) {
-				// If this is the end of the line, yell at the user for putting an unnamed arg after a named one.
-				// If this is not at the end of the line, we will register the arg as invalid in the next iteration
-				errorOnLine(pi, "All unnamed arguments must come before named ones");
-			}
-			ret->unnamed.emplace_back(argMatch[1].first, argMatch[1].second);
+			std::string flag(argMatch[1].first, argMatch[1].second);
+			// Make sure this option doesn't already exist
+			if (ret->flags.find(flag) != ret->flags.end())
+				errorOnLine(pi, "Duplicate flag");
+
+			ret->flags.insert(std::move(flag));
 			pi.curr = argMatch[0].second;
 			if (argMatch[2].matched) {
-				if (*argMatch[2].first == '}')
+				if (*argMatch[2].first == ']')
 					break;
 				lastTokenWasComma = *argMatch[2].first == ',';
 			}
@@ -368,15 +365,15 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			needsCommaNext = !lastTokenWasComma;
 		}
 		else if (!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, unquoted)) {
-			if (namedReached && argMatch[0].second == argEnd) {
-				// If this is the end of the line, yell at the user for putting an unnamed arg after a named one.
-				// If this is not at the end of the line, we will register the arg as invalid in the next iteration
-				errorOnLine(pi, "All unnamed arguments must come before named ones");
-			}
-			ret->unnamed.emplace_back(argMatch[1].first, argMatch[1].second);
+			std::string flag(argMatch[1].first, argMatch[1].second);
+			// Make sure this option doesn't already exist
+			if (ret->flags.find(flag) != ret->flags.end())
+				errorOnLine(pi, "Duplicate flag");
+
+			ret->flags.insert(std::move(flag));
 			pi.curr = argMatch[0].second;
 			if (argMatch[2].matched) {
-				if (*argMatch[2].first == '}')
+				if (*argMatch[2].first == ']')
 					break;
 				lastTokenWasComma = *argMatch[2].first == ',';
 			}
@@ -393,16 +390,56 @@ std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi) {
 			 * "myArg2
 			 */
 			if (lastTokenWasComma)
-				errorOnLine(pi, "Missing argument (double commas)");
+				errorOnLine(pi, "Missing option (double commas)");
 
 			pi.curr = argMatch[0].second;
 			lastTokenWasComma = true;
 			needsCommaNext = false;
 		}
 		else {
-			errorOnLine(pi, "Invalid argument");
+			errorOnLine(pi, "Invalid option");
 		}
 
+	}
+
+	return ret;
+}
+
+std::unique_ptr<std::vector<std::string>> parseBracketArgs(ParseInfo& pi)
+{
+	std::unique_ptr<std::vector<std::string>> ret(new std::vector<std::string>);
+
+	while (true) {
+		eatWhitespace(pi);
+		// Accept one newline and more whitespace, then demand a {
+		if (readNewline(pi)) {
+			eatWhitespace(pi);
+		}
+
+		if (pi.curr >= pi.end || *pi.curr != '{')
+			return ret;
+
+		const char* argStart = ++pi.curr; // Advance to the first character of the argument (after the '{')
+		int braceLevel = 1;
+
+		while (braceLevel > 0) {
+			if (pi.curr >= pi.end)
+				errorOnLine(pi, "End of file reached before finding end of argument");
+
+			if (*pi.curr == '\r' || *pi.curr == '\n') {
+				readNewline(pi);
+			}
+			else {
+				if (*pi.curr == '{' && *(pi.curr - 1) != '\\')
+					++braceLevel;
+				else if (*pi.curr == '}' && *(pi.curr - 1) != '\\')
+					--braceLevel;
+
+				++pi.curr;
+			}
+		}
+		const char* argEnd = pi.curr;
+		ret->emplace_back(argStart, argEnd);
 	}
 
 

@@ -1,15 +1,13 @@
 \section{Features}
 \begin{description}
 \item[auto-spaced units]
-	\[20\unit{u="\frac{V}{m^2}"}\]
+	\[20\unit{\frac{V}{m^2}}\]
 \item[Integral macro]
-	\[\integral{expr="f(x)", wrt=x, from=l, inf=1}\]
-\item[Integral macro]
-	\[\integral{expr="f(x)", wrt=x, from=l, inf=1}\]
+	\[\integral[inf]{f(x)}{x}{l}\]
 \item[Summation macro]
-	\[\summ{expr="x[k]", wrt=k, to=n, inf=1}\]
+	\[\summ[inf]{x[k]}{k}{n}\]
 \item[Derivative macro]
-	\[\deriv{wrt=x, of=y, n=2}\]
+	\[\deriv{y}{x}{2}\]
 %\item[Recursive macros]
 %	\[\integral{expr="f(x) \summ{expr="g[n]", wrt=n, inf=1}", wrt=x}\]
 \end{description}

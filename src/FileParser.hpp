@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 class Context;
@@ -21,9 +22,9 @@ struct Replacement {
 };
 
 //! Returned from parseArgs
-struct MacroArgs {
-	std::vector<std::string> unnamed;
-	std::unordered_map<std::string, std::string> named;
+struct MacroOptions {
+	std::unordered_set<std::string> flags;
+	std::unordered_map<std::string, std::string> opts;
 };
 
 struct ParseInfo {
@@ -82,10 +83,12 @@ bool readNewline(ParseInfo& pi);
 void processInclude(ParseInfo& pi);
 
 /*!
- * \brief Parses SemTeX args (e.g. \\macro{args}).
+ * \brief Parses SemTeX macro options (e.g. \\macro[these]{not, these}).
  * \returns A heap-allocated MacroArgs struct containing the arguments
  * \todo Would stack allocation be better?
  *
  * When the function returns, pi.curr is moved past the arguments
  */
-std::unique_ptr<MacroArgs> parseArgs(ParseInfo& pi);
+std::unique_ptr<MacroOptions> parseMacroOptions(ParseInfo& pi);
+
+std::unique_ptr<std::vector<std::string>> parseBracketArgs(ParseInfo& pi);
