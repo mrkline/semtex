@@ -1,3 +1,5 @@
+#include "precomp.hpp"
+
 #include "ProcessorThread.hpp"
 
 #include "Context.hpp"

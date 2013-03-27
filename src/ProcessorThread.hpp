@@ -1,9 +1,6 @@
 #ifndef __PROCESSOR_THREAD_HPP__
 #define __PROCESSOR_THREAD_HPP__
 
-#include <atomic>
-#include <thread>
-
 class Context;
 
 //! Processes files in an additional thread

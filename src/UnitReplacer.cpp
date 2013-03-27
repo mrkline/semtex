@@ -1,3 +1,5 @@
+#include "precomp.hpp"
+
 #include "UnitReplacer.hpp"
 
 #include "ErrorHandling.hpp"

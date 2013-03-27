@@ -1,11 +1,6 @@
-#include "FileParser.hpp"
+#include "precomp.hpp"
 
-#include <array>
-#include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
-#include <cstring>
-#include <fstream>
-#include <unordered_set>
+#include "FileParser.hpp"
 
 #include "ErrorHandling.hpp"
 #include "Exceptions.hpp"

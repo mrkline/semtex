@@ -1,11 +1,4 @@
-#include <tclap/CmdLine.h>
-
-#include <algorithm>
-#include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
-#include <string>
-#include <thread>
-#include <vector>
+#include "precomp.hpp"
 
 #include "Context.hpp"
 #include "Exceptions.hpp"

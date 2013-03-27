@@ -1,3 +1,5 @@
+#include "precomp.hpp"
+
 #include "TestReplacer.hpp"
 
 #include "Exceptions.hpp"

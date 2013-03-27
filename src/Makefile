@@ -17,6 +17,9 @@ semtex: $(OBJS)
 # pull in dependency info for *existing* .o files
 -include $(OBJS:.o=.d)
 
+precomp.hpp.gch: precomp.hpp
+	$(CXX) $(CXXFLAGS) precomp.hpp
+
 # compile and generate dependency info;
 # more complicated dependency computation, so all prereqs listed
 # will also become command-less, prereq-less targets
@@ -25,7 +28,7 @@ semtex: $(OBJS)
 #   fmt -1: list words one per line
 #   sed:    strip leading spaces
 #   sed:    add trailing colons
-%.o: %.cpp
+%.o: precomp.hpp.gch %.cpp
 	$(CXX) -c $(CXXFLAGS) $*.cpp -o $*.o
 	$(CXX) -MM $(CXXFLAGS) $*.cpp > $*.d
 	@mv -f $*.d $*.d.tmp
@@ -36,6 +39,6 @@ semtex: $(OBJS)
 
 # remove compilation products
 clean:
-	rm -f semtex *.o *.d
+	rm -f semtex *.o *.gch *.d
 
 .PHONY: clean

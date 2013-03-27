@@ -1,6 +1,6 @@
-#include "FileQueue.hpp"
+#include "precomp.hpp"
 
-#include <thread>
+#include "FileQueue.hpp"
 
 FileQueue::FileQueue(QueueUsedCallback call)
 	: cb(call), canDequeue(true)

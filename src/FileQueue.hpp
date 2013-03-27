@@ -1,13 +1,6 @@
 #ifndef __FILE_QUEUE_HPP__
 #define __FILE_QUEUE_HPP__
 
-#include <atomic>
-#include <chrono>
-#include <condition_variable>
-#include <mutex>
-#include <queue>
-#include <string>
-
 //! A thread-safe queue for tracking SemTeX files that need to be processed
 class FileQueue {
 public:

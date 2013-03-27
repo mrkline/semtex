@@ -1,12 +1,6 @@
 #ifndef __FILE_PARSER_HPP__
 #define __FILE_PARSER_HPP__
 
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
-
 class Context;
 
 //! Contains the location of where to insert a replacement, and where to put it

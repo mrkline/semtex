@@ -1,6 +1,6 @@
-#include "SummationReplacer.hpp"
+#include "precomp.hpp"
 
-#include <unordered_set>
+#include "SummationReplacer.hpp"
 
 #include "ErrorHandling.hpp"
 #include "Exceptions.hpp"

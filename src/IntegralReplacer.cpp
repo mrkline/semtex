@@ -1,6 +1,6 @@
-#include "IntegralReplacer.hpp"
+#include "precomp.hpp"
 
-#include <unordered_set>
+#include "IntegralReplacer.hpp"
 
 #include "ErrorHandling.hpp"
 #include "Exceptions.hpp"

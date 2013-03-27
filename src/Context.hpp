@@ -1,11 +1,6 @@
 #ifndef __CONTEXT_HPP__
 #define __CONTEXT_HPP__
 
-#include <atomic>
-#include <mutex>
-#include <string>
-#include <vector>
-
 #include "FileQueue.hpp"
 
 //! A global context. Used to pass around a ball of variables shared by lots of the code.

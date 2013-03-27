@@ -2,7 +2,6 @@
 #define __MK_EXCEPTIONS_HPP__
 
 #include <exception>
-#include <string>
 
 namespace Exceptions
 {

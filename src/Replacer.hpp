@@ -1,9 +1,6 @@
 #ifndef __REPLACER_HPP__
 #define __REPLACER_HPP__
 
-#include <string>
-#include <vector>
-
 class ParseInfo;
 
 //! Abstract base class for replacement generators
