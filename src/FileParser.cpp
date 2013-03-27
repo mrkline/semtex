@@ -10,10 +10,13 @@
 #include "ErrorHandling.hpp"
 #include "Exceptions.hpp"
 #include "Context.hpp"
+/*
 #include "DerivReplacer.hpp"
 #include "IntegralReplacer.hpp"
 #include "SummationReplacer.hpp"
 #include "UnitReplacer.hpp"
+*/
+#include "TestReplacer.hpp"
 
 namespace { // Ensure these variables are accessible only within this file.
 	const size_t kInputLen = strlen("\\input"); //!< Length of "\input"
@@ -23,12 +26,15 @@ namespace { // Ensure these variables are accessible only within this file.
 	std::unordered_set<std::string> falseStrings = {{"false", "False", "FALSE", "f", "F", "n", "N", "no", "No", "0"}};
 
 	namespace Replacers {
+		/*
 		UnitReplacer ur;
 		IntegralReplacer ir;
 		SummationReplacer sr;
 		DerivReplacer dr;
+		*/
+		TestReplacer tr;
 	}
-	std::array<Replacer*, 4> replacers = {{&Replacers::ur, &Replacers::ir, &Replacers::sr, &Replacers::dr}};
+	std::array<Replacer*, 1> replacers = {{&Replacers::tr}} ; // {{&Replacers::ur, &Replacers::ir, &Replacers::sr, &Replacers::dr}};
 }
 
 bool getStringTruthValue(const ParseInfo& pi, const std::string& str)
@@ -145,7 +151,9 @@ void parseLoop(ParseInfo& pi, bool createReplacements)
 						for (const auto& k : r->getKeys()) {
 							if (remaining > k.length() && // There are enough remaining characters to be our key
 							    strncmp(pi.curr, k.c_str(), k.length()) == 0 && // These characters match the key
-							    (pi.curr[k.length()] == '{' || isspace(pi.curr[k.length()]))) { // Not just part of key
+							    (pi.curr[k.length()] == '{' ||
+								 pi.curr[k.length()] == '[' ||
+								 isspace(pi.curr[k.length()]))) { // Not just part of key
 								matched = true;
 								shouldRecurse = r->shouldRecurse();
 								line = pi.currLine;
@@ -409,6 +417,7 @@ std::unique_ptr<std::vector<std::string>> parseBracketArgs(ParseInfo& pi)
 {
 	std::unique_ptr<std::vector<std::string>> ret(new std::vector<std::string>);
 
+	const char* argsEnd = pi.curr;
 	while (true) {
 		eatWhitespace(pi);
 		// Accept one newline and more whitespace, then demand a {
@@ -417,7 +426,7 @@ std::unique_ptr<std::vector<std::string>> parseBracketArgs(ParseInfo& pi)
 		}
 
 		if (pi.curr >= pi.end || *pi.curr != '{')
-			return ret;
+			break;
 
 		const char* argStart = ++pi.curr; // Advance to the first character of the argument (after the '{')
 		int braceLevel = 1;
@@ -438,10 +447,9 @@ std::unique_ptr<std::vector<std::string>> parseBracketArgs(ParseInfo& pi)
 				++pi.curr;
 			}
 		}
-		const char* argEnd = pi.curr;
-		ret->emplace_back(argStart, argEnd);
+		ret->emplace_back(argStart, pi.curr - 1);
+		argsEnd = pi.curr;
 	}
-
-
+	pi.curr = argsEnd;
 	return ret;
 }

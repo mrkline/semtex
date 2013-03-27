@@ -3,7 +3,7 @@
 # but will do just fine until then
 
 CXXFLAGS= -std=c++11 -Wall
-OBJS := main.o FileParser.o FileQueue.o ProcessorThread.o UnitReplacer.o IntegralReplacer.o SummationReplacer.o DerivReplacer.o
+OBJS := main.o FileParser.o FileQueue.o ProcessorThread.o TestReplacer.o # UnitReplacer.o IntegralReplacer.o SummationReplacer.o DerivReplacer.o
 
 all: CXXFLAGS += -g
 all: semtex
