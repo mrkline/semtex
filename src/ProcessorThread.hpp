@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __PROCESSOR_THREAD_HPP__
+#define __PROCESSOR_THREAD_HPP__
 
 #include <atomic>
 #include <thread>
@@ -28,3 +29,5 @@ private:
 
 	void threadProc();
 };
+
+#endif

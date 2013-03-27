@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __CONTEXT_HPP__
+#define __CONTEXT_HPP__
 
 #include <atomic>
 #include <mutex>
@@ -18,3 +19,5 @@ struct Context {
 	//! Constructor (just hands callback to queue)
 	Context(FileQueue::QueueUsedCallback cb) : error(false), queue(cb) { }
 };
+
+#endif

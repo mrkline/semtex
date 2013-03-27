@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __MK_EXCEPTIONS_HPP__
+#define __MK_EXCEPTIONS_HPP__
 
 #include <exception>
 #include <string>
@@ -219,3 +220,5 @@ namespace Exceptions
 		virtual ~NetworkException() noexcept { }
 	};
 } // end namespace Exceptions
+
+#endif

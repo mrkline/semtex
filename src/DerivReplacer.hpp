@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __DERIV_REPLACER_HPP__
+#define __DERIV_REPLACER_HPP__
 
 #include "Replacer.hpp"
 
@@ -10,3 +11,5 @@ public:
 
 	bool shouldRecurse() const override { return false;}
 };
+
+#endif

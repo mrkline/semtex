@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __FILE_PARSER_HPP__
+#define __FILE_PARSER_HPP__
 
 #include <memory>
 #include <string>
@@ -92,3 +93,5 @@ void processInclude(ParseInfo& pi);
 std::unique_ptr<MacroOptions> parseMacroOptions(ParseInfo& pi);
 
 std::unique_ptr<std::vector<std::string>> parseBracketArgs(ParseInfo& pi);
+
+#endif

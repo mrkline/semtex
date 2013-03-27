@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __INTEGRAL_REPLACER_HPP__
+#define __INTEGRAL_REPLACER_HPP__
 
 #include "Replacer.hpp"
 
@@ -11,3 +12,5 @@ public:
 
 	bool shouldRecurse() const override { return true; }
 };
+
+#endif

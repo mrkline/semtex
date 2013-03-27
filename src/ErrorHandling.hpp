@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __ERROR_HANDLING_HPP__
+#define __ERROR_HANDLING_HPP__
 
 #include <string>
 #include <sstream>
@@ -17,3 +18,5 @@ inline void errorOnLine(const ParseInfo& pi, const std::string& msg)
 		err << pi.filename << ":" << pi.currLine << ": " << msg;
 		throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
 }
+
+#endif

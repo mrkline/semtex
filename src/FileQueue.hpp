@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __FILE_QUEUE_HPP__
+#define __FILE_QUEUE_HPP__
 
 #include <atomic>
 #include <chrono>
@@ -48,3 +49,5 @@ private:
 	std::condition_variable populatedNotifier; //!< Signalled when the queue is repopulated
 	std::atomic_bool canDequeue;
 };
+
+#endif

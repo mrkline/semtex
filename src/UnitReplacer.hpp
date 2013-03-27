@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __UNIT_REPLACER_HPP__
+#define __UNIT_REPLACER_HPP__
 
 #include "Replacer.hpp"
 
@@ -12,3 +13,5 @@ public:
 	// Debatable if we should allow for replacements in units, but allow it for now
 	bool shouldRecurse() const override { return true; }
 };
+
+#endif
