@@ -138,8 +138,8 @@ void parseLoop(ParseInfo& pi, bool createReplacements)
 			// Otherwise try to match it to a mapping
 			else {
 				bool matched = false;
-				bool shouldRecurse;
-				int line;
+				bool shouldRecurse = false;
+				int line = pi.currLine;
 				if (createReplacements) { // Don't bother doing search and replace for files we won't modify
 					for (const auto& r : replacers) {
 						for (const auto& k : r->getKeys()) {

@@ -5,7 +5,7 @@
 CXXFLAGS= -std=c++11 -Wall
 OBJS := main.o FileParser.o FileQueue.o ProcessorThread.o IntegralReplacer.o UnitReplacer.o SummationReplacer.o DerivReplacer.o DirectReplacer.o # TestReplacer.o
 
-all: CXXFLAGS += -g
+all: CXXFLAGS += -Og -g
 all: semtex
 release: CXXFLAGS+= -O2 -DNDEBUG
 release: semtex
