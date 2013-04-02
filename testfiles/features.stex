@@ -10,14 +10,17 @@
 	\[\deriv{y}{x}{2}\]
 \item[Recursive macros]
 	\[\integral[inf]{f(x) \summ[inf]{n} g[n]}{x}\]
-\item[Arrows] \hfill
+\item[Simple replacements] \hfill
 	\begin{description}
-	\item[Left] $ <- $
-	\item[Right] $->$
-	\item[Thick Left] $<=$
-	\item[Thick Right] $=>$
-	\item[Both directions] $<->$
-	\item[Both directions (thick)] $<=>$
+	\item[Left arrow] $ <-- $
+	\item[Right arrow] $-->$
+	\item[Thick left arrow] $<==$
+	\item[Thick right arrow] $==>$
+	\item[Bidirectional arrow] $<-->$
+	\item[Thick bidirectional arrow] $<==>$
+	\item[Greater than] $>=$
+	\item[Less than] $<=$
+	\item[Not equals] $!=$
 	\end{description}
 \end{description}
 

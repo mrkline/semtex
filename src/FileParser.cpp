@@ -5,7 +5,7 @@
 #include "ErrorHandling.hpp"
 #include "Exceptions.hpp"
 #include "Context.hpp"
-#include "ArrowReplacer.hpp"
+#include "DirectReplacer.hpp"
 #include "DerivReplacer.hpp"
 #include "IntegralReplacer.hpp"
 #include "SummationReplacer.hpp"
@@ -24,7 +24,7 @@ namespace { // Ensure these variables are accessible only within this file.
 		UnitReplacer ur;
 		SummationReplacer sr;
 		DerivReplacer dr;
-		ArrowReplacer ar;
+		DirectReplacer ar;
 		// TestReplacer tr;
 	}
 	std::array<Replacer*, 5> replacers = {{&Replacers::ur, &Replacers::ir, &Replacers::sr, &Replacers::dr,
