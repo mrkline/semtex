@@ -10,5 +10,10 @@
 	\[\deriv{y}{x}{2}\]
 \item[Recursive macros]
 	\[\integral[inf]{f(x) \summ[inf]{n} g[n]}{x}\]
+\item[Arrows] \hfill
+	\begin{description}
+	\item[Left] $ <- $
+	\item[Right] $->$
+	\end{description}
 \end{description}
 

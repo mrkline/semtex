@@ -5,6 +5,7 @@
 #include "ErrorHandling.hpp"
 #include "Exceptions.hpp"
 #include "Context.hpp"
+#include "ArrowReplacer.hpp"
 #include "DerivReplacer.hpp"
 #include "IntegralReplacer.hpp"
 #include "SummationReplacer.hpp"
@@ -23,9 +24,11 @@ namespace { // Ensure these variables are accessible only within this file.
 		UnitReplacer ur;
 		SummationReplacer sr;
 		DerivReplacer dr;
+		ArrowReplacer ar;
 		// TestReplacer tr;
 	}
-	std::array<Replacer*, 4> replacers = {{&Replacers::ur, &Replacers::ir, &Replacers::sr, &Replacers::dr}};
+	std::array<Replacer*, 5> replacers = {{&Replacers::ur, &Replacers::ir, &Replacers::sr, &Replacers::dr,
+	                                       &Replacers::ar}};
 }
 
 bool getStringTruthValue(const ParseInfo& pi, const std::string& str)
@@ -144,7 +147,7 @@ void parseLoop(ParseInfo& pi, bool createReplacements)
 							    strncmp(pi.curr, k.c_str(), k.length()) == 0 && // These characters match the key
 							    (pi.curr[k.length()] == '{' ||
 								 pi.curr[k.length()] == '[' ||
-								 isspace(pi.curr[k.length()]))) { // Not just part of key
+								 !isalpha(pi.curr[k.length()]))) { // Not just part of key
 								matched = true;
 								shouldRecurse = r->shouldRecurse();
 								line = pi.currLine;
