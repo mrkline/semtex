@@ -3,7 +3,7 @@
 #include "FileQueue.hpp"
 
 FileQueue::FileQueue(QueueUsedCallback call)
-	: cb(call), canDequeue(true)
+	: cb(call), q(), qMutex(), populatedNotifier(), canDequeue(true)
 {
 }
 

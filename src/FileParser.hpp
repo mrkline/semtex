@@ -17,13 +17,19 @@ struct Replacement {
 		: start(s), end(e), replaceWith(r)
 	{ }
 
-	Replacement(Replacement&& m) = default;
+	// Satisfies Effective C++ guidelines of providing copy and assignment for objects with pointers
+	Replacement& operator=(const Replacement&) = default;
+	Replacement(Replacement&) = default;
+	Replacement(Replacement&&) = default;
 };
 
 //! Returned from parseArgs
 struct MacroOptions {
 	std::unordered_set<std::string> flags;
 	std::unordered_map<std::string, std::string> opts;
+
+	// This has a constructor, as it is not a POD type
+	MacroOptions() : flags(), opts() { }
 };
 
 struct ParseInfo {
@@ -41,8 +47,12 @@ struct ParseInfo {
 
 	ParseInfo(const std::string& file, const char* current, const char* end, Context& context, int startingLine = 1)
 		: filename(file), curr(current), end(end), currLine(startingLine),
-		  unixNewlines(0), windowsNewlines(0), macNewlines(0), ctxt(context)
+		  unixNewlines(0), windowsNewlines(0), macNewlines(0), ctxt(context), replacements()
 	{ }
+
+	// No copy or assignment
+	ParseInfo(const ParseInfo&) = delete;
+	ParseInfo& operator=(const ParseInfo&) = delete;
 };
 
 /*!

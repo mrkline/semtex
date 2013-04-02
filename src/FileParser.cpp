@@ -279,7 +279,7 @@ std::unique_ptr<MacroOptions> parseMacroOptions(ParseInfo& pi) {
 	//! A comma, separating args
 	static boost::regex spacedComma(R"regex(^\s*,\s*)regex", boost::regex::optimize);
 
-	std::unique_ptr<MacroOptions> ret(new MacroOptions());
+	std::unique_ptr<MacroOptions> ret(new MacroOptions);
 
 	eatWhitespace(pi);
 	// Accept one newline and more whitespace, then demand a [

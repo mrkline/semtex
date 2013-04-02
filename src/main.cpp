@@ -8,7 +8,7 @@
 
 // Prototype for the function below so we can declare ctxt with the other static variables.
 // Slightly kludgy, I know.
-void queueCallback(const FileQueue& sfq);
+void queueCallback(const FileQueue&);
 
 namespace { // Ensure these variables are accessible only within this file.
 	bool threadsStarted = false;
@@ -16,7 +16,7 @@ namespace { // Ensure these variables are accessible only within this file.
 	Context ctxt(&queueCallback);
 }
 
-void queueCallback(const FileQueue& sfq)
+void queueCallback(const FileQueue&)
 {
 	if (threadsStarted)
 		return;
