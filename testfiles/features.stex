@@ -1,6 +1,14 @@
 \section{Features}
 \begin{description}
-\item[New Syntax]
-	\test[this, "is", new="syntax", test]{1}{2}{3}{abc}
+\item[auto-spaced units]
+	\[20\unit{\frac{V}{m^2}}\]
+\item[Integral macro]
+	\[\integral[inf]{f(x)}{x}{l}\]
+\item[Summation macro]
+	\[\summ[inf]{x[k]}{k}{n}\]
+\item[Derivative macro]
+	\[\deriv{y}{x}{2}\]
+\item[Recursive macros]
+	\[\integral[inf]{f(x) \summ[inf]{n} g[n]}{x}\]
 \end{description}
 

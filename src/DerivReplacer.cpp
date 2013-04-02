@@ -5,7 +5,6 @@
 #include "ErrorHandling.hpp"
 #include "Exceptions.hpp"
 
-static std::unordered_set<std::string> acceptedArgs = {{"wrt", "of", "n"}};
 
 DerivReplacer::DerivReplacer()
 	: Replacer({"\\deriv"})
@@ -15,78 +14,49 @@ void DerivReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 {
 	const char* start = pi.curr;
 	pi.curr += matchedKey.length();
-	std::unique_ptr<MacroArgs> args;
+
+	std::unique_ptr<MacroOptions> options;
+	decltype(parseBracketArgs(pi)) argList;
 	try {
-		args = parseArgs(pi);
+		options = parseMacroOptions(pi);
+		argList = parseBracketArgs(pi);
 	}
 	catch (const Exceptions::InvalidInputException& ex) {
-		throw Exceptions::InvalidInputException(ex.message + " in \\deriv", __FUNCTION__);
+		throw Exceptions::InvalidInputException(ex.message + " in \\integral", __FUNCTION__);
 	}
 
-	if (args->unnamed.size() > 3)
-		errorOnLine(pi, "Incorrect number of unnamed arguments for \\deriv");
+	if (options->opts.size() != 0)
+		errorOnLine(pi, "\\unit does not take options");
 
-	for (const auto& arg : args->named) {
-		if (acceptedArgs.find(arg.first) == acceptedArgs.end())
-			errorOnLine(pi, "Unknown argument \"" + arg.first + "\" for \\integral");
-	}
+	if (options->flags.size() != 0)
+		errorOnLine(pi, "\\unit does not take flags");
 
-	std::string* wrt = nullptr;
-	std::string* of = nullptr;
-	std::string* n = nullptr;
+	const size_t numArgs = argList->size();
 
-	switch (args->unnamed.size()) {
-		case 3:
-			n = &args->unnamed[2];
-		case 2:
-			of = &args->unnamed[1];
-		case 1:
-			wrt = &args->unnamed[0];
-	}
+	if (numArgs < 1)
+		errorOnLine(pi, "\\unit needs at least one argument");
 
-	const auto wrtIt = args->named.find("wrt");
-	const auto ofIt = args->named.find("of");
-	const auto nIt = args->named.find("n");
-
-	const auto ei = args->named.end();
-
-	if (wrtIt != ei) {
-		if (wrt != nullptr)
-			errorOnLine(pi, "Duplicate \"with respect to\" argument for \\deriv");
-		else
-			wrt = & wrtIt->second;
-	}
-
-	if (ofIt != ei) {
-		if (of != nullptr)
-			errorOnLine(pi, "Duplicate \"of\" argument for \\deriv");
-		else
-			of = &ofIt->second;
-	}
-
-	if (nIt != ei) {
-		if (n != nullptr)
-			errorOnLine(pi, "Duplicate \"n\" argument for \\deriv");
-		else
-			n = &nIt->second;
-	}
-
-	if (wrt == nullptr)
-		errorOnLine(pi, "Missing mandatory \"of\" argument for \\deriv");
+	if (numArgs > 3)
+		errorOnLine(pi, "\\unit only takes one to three arguments");
 
 	std::string replacement = "\\frac{\\mathrm{d}";
 
-	if (n != nullptr)
-		replacement += "^{" + *n + "}";
+	switch (numArgs) {
+		case 3:
+			replacement += "^{" + argList->at(2) + "} " + argList->at(1) + "}";
+			replacement += "{\\mathrm{d} " + argList->at(0) + "^{" + argList->at(2) + "}}";
+			break;
 
-	if (of != nullptr)
-		replacement += *of;
+		case 2:
+			replacement += " " + argList->at(1) + "}";
+			replacement += "{\\mathrm{d} " + argList->at(0) + "}";
+			break;
 
-	replacement += "}{\\mathrm{d}" + *wrt;
+		case 1:
+			replacement += "}";
+			replacement += "{\\mathrm{d} " + argList->at(0) + "}";
+			break;
+	}
 
-	if (n != nullptr)
-		replacement += "^{" + *n + "}";
-
-	replacement += "}";
 	pi.replacements.emplace_back(start, pi.curr, std::move(replacement));
 }

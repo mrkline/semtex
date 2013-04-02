@@ -5,13 +5,11 @@
 #include "ErrorHandling.hpp"
 #include "Exceptions.hpp"
 #include "Context.hpp"
-/*
 #include "DerivReplacer.hpp"
 #include "IntegralReplacer.hpp"
 #include "SummationReplacer.hpp"
 #include "UnitReplacer.hpp"
-*/
-#include "TestReplacer.hpp"
+// #include "TestReplacer.hpp"
 
 namespace { // Ensure these variables are accessible only within this file.
 	const size_t kInputLen = strlen("\\input"); //!< Length of "\input"
@@ -21,15 +19,13 @@ namespace { // Ensure these variables are accessible only within this file.
 	std::unordered_set<std::string> falseStrings = {{"false", "False", "FALSE", "f", "F", "n", "N", "no", "No", "0"}};
 
 	namespace Replacers {
-		/*
-		UnitReplacer ur;
 		IntegralReplacer ir;
+		UnitReplacer ur;
 		SummationReplacer sr;
 		DerivReplacer dr;
-		*/
-		TestReplacer tr;
+		// TestReplacer tr;
 	}
-	std::array<Replacer*, 1> replacers = {{&Replacers::tr}} ; // {{&Replacers::ur, &Replacers::ir, &Replacers::sr, &Replacers::dr}};
+	std::array<Replacer*, 4> replacers = {{&Replacers::ur, &Replacers::ir, &Replacers::sr, &Replacers::dr}};
 }
 
 bool getStringTruthValue(const ParseInfo& pi, const std::string& str)
