@@ -10,6 +10,10 @@ struct Replacement {
 	std::string replaceWith; //!< Immutable replacement string
 
 	Replacement(const char* s, const char* e, std::string&& r)
+		: start(s), end(e), replaceWith(std::forward<std::string>(r))
+	{ }
+
+	Replacement(const char* s, const char* e, const std::string& r)
 		: start(s), end(e), replaceWith(r)
 	{ }
 

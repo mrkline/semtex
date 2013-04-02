@@ -7,7 +7,13 @@ class ParseInfo;
 class Replacer {
 public:
 	//! Constructor. Takes a list of keys to initialize keyList with
-	Replacer(std::initializer_list<std::string> keys) : keyList(keys) { }
+	Replacer(std::initializer_list<std::string> keys) : keyList(keys)
+	{
+		// Make the longest key first so that smaller keys with the same beginnings as larger ones
+		// aren't too greedy (e.g. <-> would be parsed as <- and >)
+		std::sort(keyList.begin(), keyList.end(), [](const std::string& a, const std::string& b)
+		                                             { return b.length() < a.length(); });
+	}
 
 	virtual ~Replacer() { }
 
