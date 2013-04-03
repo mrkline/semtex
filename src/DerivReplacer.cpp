@@ -43,13 +43,13 @@ void DerivReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 
 	switch (numArgs) {
 		case 3:
-			replacement += "^{" + argList->at(2) + "} " + argList->at(1) + "}";
-			replacement += "{\\mathrm{d} " + argList->at(0) + "^{" + argList->at(2) + "}}";
+			replacement += "^{" + argList->at(2) + "} " + argList->at(0) + "}";
+			replacement += "{\\mathrm{d} " + argList->at(1) + "^{" + argList->at(2) + "}}";
 			break;
 
 		case 2:
-			replacement += " " + argList->at(1) + "}";
-			replacement += "{\\mathrm{d} " + argList->at(0) + "}";
+			replacement += " " + argList->at(0) + "}";
+			replacement += "{\\mathrm{d} " + argList->at(1) + "}";
 			break;
 
 		case 1:
