@@ -11,6 +11,15 @@ public:
 	void replace(const std::string& matchedKey, ParseInfo& pi) override;
 
 	bool shouldRecurse() const override { return false; }
+
+private:
+	const std::unordered_map<std::string, std::string> replacements =
+		{{"<--","\\leftarrow"}, {"-->","\\rightarrow"},
+		 {"<==","\\Leftarrow"}, {"==>","\\Rightarrow"},
+		 {"<-->","\\leftrightarrow"}, {"<==>","\\Leftrightarrow"},
+		 {"!=","\\neq"}, {">=","\\geq"}, {"<=","\\leq"}};
+
+	std::vector<std::string> getReplacementKeys();
 };
 
 #endif

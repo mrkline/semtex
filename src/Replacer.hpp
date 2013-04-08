@@ -15,6 +15,14 @@ public:
 		                                             { return b.length() < a.length(); });
 	}
 
+	Replacer(std::vector<std::string>&& keys) : keyList(std::forward<decltype(keys)>(keys))
+	{
+		// Make the longest key first so that smaller keys with the same beginnings as larger ones
+		// aren't too greedy (e.g. <-> would be parsed as <- and >)
+		std::sort(keyList.begin(), keyList.end(), [](const std::string& a, const std::string& b)
+		                                             { return b.length() < a.length(); });
+	}
+
 	virtual ~Replacer() { }
 
 	/*!
