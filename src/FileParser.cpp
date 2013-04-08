@@ -142,6 +142,7 @@ void parseLoop(ParseInfo& pi, bool createReplacements)
 				int line = pi.currLine;
 				if (createReplacements) { // Don't bother doing search and replace for files we won't modify
 					for (const auto& r : replacers) {
+						//! \todo Could likely be optimized since we're now using a set
 						for (const auto& k : r->getKeys()) {
 							if (remaining > k.length() && // There are enough remaining characters to be our key
 							    strncmp(pi.curr, k.c_str(), k.length()) == 0 && // These characters match the key

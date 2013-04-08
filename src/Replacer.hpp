@@ -6,28 +6,17 @@ class ParseInfo;
 //! Abstract base class for replacement generators
 class Replacer {
 public:
+
 	/*!
 	 * \brief Constructor. Assumes the base class's constructor will fill the key list later
 	 * \see DirectReplacer as an example
 	 */
-	Replacer() : keyList() { }
+	Replacer() : keySet(std::greater<std::string>()) { }
 
-	//! Constructor. Takes a list of keys to initialize keyList with
-	Replacer(std::initializer_list<std::string> keys) : keyList(keys)
-	{
-		// Make the longest key first so that smaller keys with the same beginnings as larger ones
-		// aren't too greedy (e.g. <-> would be parsed as <- and >)
-		std::sort(keyList.begin(), keyList.end(), [](const std::string& a, const std::string& b)
-		                                             { return b.length() < a.length(); });
-	}
-
-	Replacer(std::vector<std::string>&& keys) : keyList(std::forward<decltype(keys)>(keys))
-	{
-		// Make the longest key first so that smaller keys with the same beginnings as larger ones
-		// aren't too greedy (e.g. <-> would be parsed as <- and >)
-		std::sort(keyList.begin(), keyList.end(), [](const std::string& a, const std::string& b)
-		                                             { return b.length() < a.length(); });
-	}
+	//! Constructor. Takes a list of keys to initialize keySet with
+	Replacer(std::initializer_list<std::string> keys)
+		: keySet(keys, std::greater<std::string>())
+	{ }
 
 	virtual ~Replacer() { }
 
@@ -41,15 +30,17 @@ public:
 	/*!
 	 * \brief Gets a list of tokens that should start a replacement of this type
 	 *
-	 * Constructors should initialize keyList to whatever they want
+	 * Constructors should initialize keySet to whatever they want
 	 */
-	const std::vector<std::string>& getKeys() const { return keyList; };
+	const std::set<std::string, std::greater<std::string>>& getKeys() const { return keySet; };
 
 	//! Returns true if the generated replacement can contain replacements itself
 	virtual bool shouldRecurse() const = 0;
 
 protected:
-	std::vector<std::string> keyList;
+	std::set<std::string, std::greater<std::string>> keySet;
+
+private:
 };
 
 #endif

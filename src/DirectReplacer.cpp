@@ -46,7 +46,7 @@ DirectReplacer::DirectReplacer()
 		 {"'X", "\\Xi"}})
 {
 	for (const auto& kp : replacements)
-		keyList.push_back(kp.first);
+		keySet.emplace(kp.first);
 }
 
 void DirectReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
