@@ -5,19 +5,49 @@
 #include "Exceptions.hpp"
 #include "FileParser.hpp"
 
-std::vector<std::string> DirectReplacer::getReplacementKeys()
-{
-	std::vector<std::string> ret;
-	for (const auto& kp : replacements) {
-		printf("Wat\n");
-		ret.push_back(kp.first);
-	}
-	return ret;
-}
-
 DirectReplacer::DirectReplacer()
-	: Replacer(getReplacementKeys())
-{ }
+	: replacements(
+		{{"<--","\\leftarrow"}, {"-->","\\rightarrow"},
+		 {"<==","\\Leftarrow"}, {"==>","\\Rightarrow"},
+		 {"<-->","\\leftrightarrow"}, {"<==>","\\Leftrightarrow"},
+		 {"!=","\\neq"}, {">=","\\geq"}, {"<=","\\leq"},
+		 {"'t", "\\theta"},
+		 {"'w", "\\wedge"},
+		 {"'e", "\\varepsilon"},
+		 {"'r", "\\rho"},
+		 {"'t", "\\tau"},
+		 {"'y", "\\psi"},
+		 {"'u", "\\upsilon"},
+		 {"'p", "\\pi"},
+		 {"'a", "\\alpha"},
+		 {"'s", "\\sigma"},
+		 {"'d", "\\delta"},
+		 {"'f", "\\varphi"},
+		 {"'g", "\\gamma"},
+		 {"'h", "\\eta"},
+		 {"'k", "\\kappa"},
+		 {"'l", "\\lambda"},
+		 {"'z", "\\zeta"},
+		 {"'x", "\\xi"},
+		 {"'c", "\\chi"},
+		 {"'v", "\\varsigma"},
+		 {"'b", "\\beta"},
+		 {"'n", "\\nu"},
+		 {"'m", "\\mu"},
+		 {"'Q", "\\Theta"},
+		 {"'W", "\\Omega"},
+		 {"'Y", "\\Psi"},
+		 {"'U", "\\Upsilon"},
+		 {"'S", "\\Sigma"},
+		 {"'D", "\\Delta"},
+		 {"'F", "\\Phi"},
+		 {"'G", "\\Gamma"},
+		 {"'L", "\\Lambda"},
+		 {"'X", "\\Xi"}})
+{
+	for (const auto& kp : replacements)
+		keyList.push_back(kp.first);
+}
 
 void DirectReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 {

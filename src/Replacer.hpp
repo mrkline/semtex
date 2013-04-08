@@ -6,6 +6,12 @@ class ParseInfo;
 //! Abstract base class for replacement generators
 class Replacer {
 public:
+	/*!
+	 * \brief Constructor. Assumes the base class's constructor will fill the key list later
+	 * \see DirectReplacer as an example
+	 */
+	Replacer() : keyList() { }
+
 	//! Constructor. Takes a list of keys to initialize keyList with
 	Replacer(std::initializer_list<std::string> keys) : keyList(keys)
 	{
