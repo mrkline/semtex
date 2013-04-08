@@ -6,7 +6,7 @@
 #include "Exceptions.hpp"
 #include "FileParser.hpp"
 
-static std::unordered_set<std::string> acceptedFlags = {{"inf"}};
+static std::unordered_set<std::string> acceptedFlags({"inf", "lim"});
 
 IntegralReplacer::IntegralReplacer()
 	: Replacer({"\\integral"})
@@ -40,7 +40,8 @@ void IntegralReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 	if (numArgs > 4)
 		errorOnLine(pi, "Too many arguments for \\integral");
 
-	bool inf = options->flags.size() > 0;
+	bool inf = options->flags.find("inf") != options->flags.end();
+	bool lim = options->flags.find("lim") != options->flags.end();
 
 	// Arg 0 is the expression
 	// Arg 1 is with respect to (d_)
@@ -48,6 +49,9 @@ void IntegralReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 	// Arg 3 is the upper bound
 
 	std::string replacement = "\\int";
+	if ((numArgs >= 3 || inf) && lim)
+		replacement += "\\limits";
+
 	if (numArgs >= 3)
 		replacement += "_{" + argList->at(2) + "}";
 	else if (inf)

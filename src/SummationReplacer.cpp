@@ -6,7 +6,7 @@
 #include "Exceptions.hpp"
 #include "FileParser.hpp"
 
-static std::unordered_set<std::string> acceptedFlags = {{"inf"}};
+static std::unordered_set<std::string> acceptedFlags({"inf", "lim"});
 
 SummationReplacer::SummationReplacer()
 	: Replacer({"\\summ"})
@@ -40,7 +40,8 @@ void SummationReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 	if (numArgs > 3)
 		errorOnLine(pi, "Too many arguments for \\summation");
 
-	bool inf = options->flags.size() > 0;
+	bool inf = options->flags.find("inf") != options->flags.end();
+	bool lim = options->flags.find("lim") != options->flags.end();
 
 	// Arg 0 is the counting variable
 	// Arg 1 is the lower bound
@@ -50,6 +51,9 @@ void SummationReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 	const std::string* upper = numArgs >= 3 ? &argList->at(2) : nullptr;
 
 	std::string replacement = "\\sum";
+	if ((upper != nullptr || lower != nullptr || inf) && lim)
+		replacement += "\\limits";
+
 	if (lower != nullptr)
 		replacement += "_{" + (wrt != nullptr ? *wrt + "=" : "") + *lower + "}";
 	else if (inf)
