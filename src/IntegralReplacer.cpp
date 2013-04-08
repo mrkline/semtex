@@ -52,12 +52,12 @@ void IntegralReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 	if ((numArgs >= 3 || inf) && lim)
 		replacement += "\\limits";
 
-	if (numArgs >= 3)
+	if (numArgs >= 3 && !argList->at(2).empty())
 		replacement += "_{" + argList->at(2) + "}";
 	else if (inf)
 		replacement += "_{-\\infty}";
 
-	if (numArgs >= 4)
+	if (numArgs >= 4 && !argList->at(3).empty())
 		replacement += "^{" + argList->at(3) + "}";
 	else if (inf)
 		replacement += "^{\\infty}";
