@@ -141,7 +141,18 @@ void parseLoop(ParseInfo& pi, bool createReplacements)
 				bool shouldRecurse = false;
 				int line = pi.currLine;
 				if (createReplacements) { // Don't bother doing search and replace for files we won't modify
+					const char* endSearch = pi.curr + 1;
+					while (endSearch < pi.end && *endSearch != ' ' && *endSearch != '\r' && *endSearch != '\n')
+						++endSearch;
+					std::string toSearch(pi.curr, endSearch);
 					for (const auto& r : replacers) {
+						auto it = r->getKeys().lower_bound(toSearch);
+						if (it == r->getKeys().end())
+							--it;
+
+						if (strncmp(pi.curr, it->c_str(), it->length()) == 0)
+							printf("Match! %s\n", it->c_str());
+						/*
 						//! \todo Could likely be optimized since we're now using a set
 						for (const auto& k : r->getKeys()) {
 							if (remaining > k.length() && // There are enough remaining characters to be our key
@@ -156,6 +167,7 @@ void parseLoop(ParseInfo& pi, bool createReplacements)
 								break;
 							}
 						}
+						*/
 						if (matched)
 							break;
 					}
