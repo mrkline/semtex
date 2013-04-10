@@ -53,10 +53,10 @@ DirectReplacer::DirectReplacer()
 		keySet.emplace(kp.first);
 }
 
-void DirectReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
+void DirectReplacer::replace(const std::string& matchedKey, Parser& p)
 {
-	const char* start = pi.curr;
-	pi.curr += matchedKey.length();
+	const char* start = p.curr;
+	p.curr += matchedKey.length();
 
-	pi.replacements.emplace_back(start, pi.curr, replacements.at(matchedKey));
+	p.replacements.emplace_back(start, p.curr, replacements.at(matchedKey));
 }

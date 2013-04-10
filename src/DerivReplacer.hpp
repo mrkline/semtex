@@ -7,7 +7,7 @@ class DerivReplacer final : public Replacer {
 public:
 	DerivReplacer();
 
-	void replace(const std::string& matchedKey, ParseInfo& pi) override;
+	void replace(const std::string& matchedKey, Parser& p) override;
 
 	bool shouldRecurse() const override { return false;}
 };

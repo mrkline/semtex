@@ -9,10 +9,10 @@ TestReplacer::TestReplacer()
 	: Replacer({"\\test"})
 { }
 
-void TestReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
+void TestReplacer::replace(const std::string& matchedKey, Parser& p)
 {
-	const char* start = pi.curr;
-	pi.curr += matchedKey.length();
+	const char* start = p.curr;
+	p.curr += matchedKey.length();
 
 	std::unique_ptr<MacroOptions> options;
 	decltype(parseBracketArgs(pi)) argList;
@@ -33,5 +33,5 @@ void TestReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 	for (const auto& arg : *argList)
 		printf("Arg: %s\n", arg.c_str());
 
-	pi.replacements.emplace_back(start, pi.curr, "");
+	p.replacements.emplace_back(start, p.curr, "");
 }

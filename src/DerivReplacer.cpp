@@ -9,34 +9,34 @@ DerivReplacer::DerivReplacer()
 	: Replacer({"\\deriv"})
 { }
 
-void DerivReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
+void DerivReplacer::replace(const std::string& matchedKey, Parser& p)
 {
-	const char* start = pi.curr;
-	pi.curr += matchedKey.length();
+	const char* start = p.curr;
+	p.curr += matchedKey.length();
 
 	std::unique_ptr<MacroOptions> options;
-	decltype(pi.parseBracketArgs()) argList;
+	decltype(p.parseBracketArgs()) argList;
 	try {
-		options = pi.parseMacroOptions();
-		argList = pi.parseBracketArgs();
+		options = p.parseMacroOptions();
+		argList = p.parseBracketArgs();
 	}
 	catch (const Exceptions::InvalidInputException& ex) {
 		throw Exceptions::InvalidInputException(ex.message + " in \\integral", __FUNCTION__);
 	}
 
 	if (options->opts.size() != 0)
-		pi.errorOnLine("\\unit does not take options");
+		p.errorOnLine("\\unit does not take options");
 
 	if (options->flags.size() != 0)
-		pi.errorOnLine("\\unit does not take flags");
+		p.errorOnLine("\\unit does not take flags");
 
 	const size_t numArgs = argList->size();
 
 	if (numArgs < 1)
-		pi.errorOnLine("\\unit needs at least one argument");
+		p.errorOnLine("\\unit needs at least one argument");
 
 	if (numArgs > 3)
-		pi.errorOnLine("\\unit only takes one to three arguments");
+		p.errorOnLine("\\unit only takes one to three arguments");
 
 	std::string replacement = "\\frac{\\mathrm{d}";
 
@@ -57,5 +57,5 @@ void DerivReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 			break;
 	}
 
-	pi.replacements.emplace_back(start, pi.curr, std::move(replacement));
+	p.replacements.emplace_back(start, p.curr, std::move(replacement));
 }

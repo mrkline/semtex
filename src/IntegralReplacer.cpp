@@ -11,33 +11,33 @@ IntegralReplacer::IntegralReplacer()
 	: Replacer({"\\integral"})
 { }
 
-void IntegralReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
+void IntegralReplacer::replace(const std::string& matchedKey, Parser& p)
 {
-	const char* start = pi.curr;
-	pi.curr += matchedKey.length();
+	const char* start = p.curr;
+	p.curr += matchedKey.length();
 
 	std::unique_ptr<MacroOptions> options;
-	decltype(pi.parseBracketArgs()) argList;
+	decltype(p.parseBracketArgs()) argList;
 	try {
-		options = pi.parseMacroOptions();
-		argList = pi.parseBracketArgs();
+		options = p.parseMacroOptions();
+		argList = p.parseBracketArgs();
 	}
 	catch (const Exceptions::InvalidInputException& ex) {
 		throw Exceptions::InvalidInputException(ex.message + " in \\integral", __FUNCTION__);
 	}
 
 	if (options->opts.size() != 0)
-		pi.errorOnLine("\\integral does not take options");
+		p.errorOnLine("\\integral does not take options");
 
 	for (const auto& flag : options->flags) {
 		if (acceptedFlags.find(flag) == acceptedFlags.end())
-			pi.errorOnLine("Unknown argument \"" + flag + "\" for \\integral");
+			p.errorOnLine("Unknown argument \"" + flag + "\" for \\integral");
 	}
 
 	const size_t numArgs = argList->size();
 
 	if (numArgs > 4)
-		pi.errorOnLine("Too many arguments for \\integral");
+		p.errorOnLine("Too many arguments for \\integral");
 
 	bool inf = options->flags.find("inf") != options->flags.end();
 	bool lim = options->flags.find("lim") != options->flags.end();
@@ -66,5 +66,5 @@ void IntegralReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 	if (numArgs >= 2)
 		replacement += "\\,\\mathrm{d}" + argList->at(1);
 
-	pi.replacements.emplace_back(start, pi.curr, std::move(replacement));
+	p.replacements.emplace_back(start, p.curr, std::move(replacement));
 }

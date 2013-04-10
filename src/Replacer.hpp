@@ -1,7 +1,7 @@
 #ifndef __REPLACER_HPP__
 #define __REPLACER_HPP__
 
-class ParseInfo;
+class Parser;
 
 //! Abstract base class for replacement generators
 class Replacer {
@@ -23,9 +23,9 @@ public:
 	/*!
 	 * \brief Performs a replacement, or does nothing
 	 * \param matchedKey the key from Replacer::getKeys that was matched
-	 * \param pi ParseInfo for the current file (or replacement, in the case of recursion)
+	 * \param p Parser for the current file (or replacement, in the case of recursion)
 	 */
-	virtual void replace(const std::string& matchedKey, ParseInfo& pi) = 0;
+	virtual void replace(const std::string& matchedKey, Parser& p) = 0;
 
 	/*!
 	 * \brief Gets a list of tokens that should start a replacement of this type

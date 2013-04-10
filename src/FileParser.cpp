@@ -30,7 +30,7 @@ namespace { // Ensure these variables are accessible only within this file.
 	                                       &Replacers::ar}};
 }
 
-bool ParseInfo::getStringTruthValue(const std::string& str)
+bool Parser::getStringTruthValue(const std::string& str)
 {
 	if (trueStrings.find(str) != trueStrings.end())
 		return true;
@@ -68,8 +68,8 @@ void processFile(const std::string& file, Context& ctxt)
 	    || (file.length() > se.length() && file.compare(file.length() - se.length(), se.length(), se) == 0))
 		createModdedCopy = true;
 
-	ParseInfo pi(file, fileBuff.get(), fileBuff.get() + fileSize, ctxt);
-	pi.parseLoop(createModdedCopy);
+	Parser p(file, fileBuff.get(), fileBuff.get() + fileSize, ctxt);
+	p.parseLoop(createModdedCopy);
 
 	if (ctxt.verbose && !ctxt.error)
 		printf("Done processing %s...\n", file.c_str());
@@ -88,14 +88,14 @@ void processFile(const std::string& file, Context& ctxt)
 		ctxt.generatedFilesMutex.lock();
 		ctxt.generatedFiles.emplace_back(outname);
 		ctxt.generatedFilesMutex.unlock();
-		if (pi.replacements.empty()) {
+		if (p.replacements.empty()) {
 			outfile.write(fileBuff.get(), fileSize);
 		}
 		else {
 			// TODO: Replace all newlines in replacements with the most commonly found newline in the file,
 			//       perhaps using boost::replace_all
 			const char* curr = fileBuff.get();
-			for (const auto& r : pi.replacements) {
+			for (const auto& r : p.replacements) {
 				// Write from the current location up to the start of the replacement
 				outfile.write(curr, std::distance(curr, r.start));
 				// Write the replacement
@@ -103,14 +103,14 @@ void processFile(const std::string& file, Context& ctxt)
 				curr = r.end;
 			}
 			// Write out the end of the file
-			outfile.write(curr, std::distance(curr, pi.end));
+			outfile.write(curr, std::distance(curr, p.end));
 		}
 		if (ctxt.verbose && !ctxt.error) // Fairly safe to skip another error check here since we just checked
 			printf("Done writing out LaTeX file for %s...\n", file.c_str());
 	}
 }
 
-void ParseInfo::parseLoop(bool createReplacements)
+void Parser::parseLoop(bool createReplacements)
 {
 	const char* const first = curr;
 	while (curr < end) {
@@ -170,19 +170,19 @@ void ParseInfo::parseLoop(bool createReplacements)
 						const std::string& toSubSearch = replacements.back().replaceWith;
 						const char* subStart = toSubSearch.c_str();
 						const char* subEnd = subStart + toSubSearch.size();
-						ParseInfo rpi(filename, subStart, subEnd, ctxt, line);
-						rpi.parseLoop(true); // Recurse using our new context
-						if (!rpi.replacements.empty()) {
+						Parser rp(filename, subStart, subEnd, ctxt, line);
+						rp.parseLoop(true); // Recurse using our new context
+						if (!rp.replacements.empty()) {
 							std::string newRep;
 							const char* curr = subStart;
-							for (const auto& r : rpi.replacements) {
+							for (const auto& r : rp.replacements) {
 								// Write from the current location up to the start of the replacement
 								newRep.append(curr, r.start);
 								// Write the replacement
 								newRep.append(r.replaceWith);
 								curr = r.end;
 							}
-							newRep.append(curr, rpi.end);
+							newRep.append(curr, rp.end);
 							replacements.back().replaceWith = std::move(newRep);
 						}
 					}
@@ -199,7 +199,7 @@ void ParseInfo::parseLoop(bool createReplacements)
 	}
 }
 
-bool ParseInfo::readNewline()
+bool Parser::readNewline()
 {
 	if (curr >= end)
 		return false;
@@ -233,7 +233,7 @@ bool ParseInfo::readNewline()
 	return false;
 }
 
-void ParseInfo::processInclude()
+void Parser::processInclude()
 {
 	// For printing purposes, etc., determine if it is \include or \input
 	bool isInclude = curr[3] == 'c';
@@ -269,7 +269,7 @@ void ParseInfo::processInclude()
 	}
 }
 
-std::unique_ptr<MacroOptions> ParseInfo::parseMacroOptions() {
+std::unique_ptr<MacroOptions> Parser::parseMacroOptions() {
 	// Regex for matching args
 
 	//! An unquoted, unnamed arg, such as [ myArg ]
@@ -413,7 +413,7 @@ std::unique_ptr<MacroOptions> ParseInfo::parseMacroOptions() {
 	return ret;
 }
 
-std::unique_ptr<std::vector<std::string>> ParseInfo::parseBracketArgs()
+std::unique_ptr<std::vector<std::string>> Parser::parseBracketArgs()
 {
 	std::unique_ptr<std::vector<std::string>> ret(new std::vector<std::string>);
 
@@ -454,7 +454,7 @@ std::unique_ptr<std::vector<std::string>> ParseInfo::parseBracketArgs()
 	return ret;
 }
 
-void ParseInfo::errorOnLine(const std::string& msg)
+void Parser::errorOnLine(const std::string& msg)
 {
 		std::stringstream err;
 		err << filename << ":" << currLine << ": " << msg;

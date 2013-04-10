@@ -11,33 +11,33 @@ SummationReplacer::SummationReplacer()
 	: Replacer({"\\summ"})
 { }
 
-void SummationReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
+void SummationReplacer::replace(const std::string& matchedKey, Parser& p)
 {
-	const char* start = pi.curr;
-	pi.curr += matchedKey.length();
+	const char* start = p.curr;
+	p.curr += matchedKey.length();
 
 	std::unique_ptr<MacroOptions> options;
-	decltype(pi.parseBracketArgs()) argList;
+	decltype(p.parseBracketArgs()) argList;
 	try {
-		options = pi.parseMacroOptions();
-		argList = pi.parseBracketArgs();
+		options = p.parseMacroOptions();
+		argList = p.parseBracketArgs();
 	}
 	catch (const Exceptions::InvalidInputException& ex) {
 		throw Exceptions::InvalidInputException(ex.message + " in \\summation", __FUNCTION__);
 	}
 
 	if (options->opts.size() != 0)
-		pi.errorOnLine("\\summation does not take options");
+		p.errorOnLine("\\summation does not take options");
 
 	for (const auto& flag : options->flags) {
 		if (acceptedFlags.find(flag) == acceptedFlags.end())
-			pi.errorOnLine("Unknown argument \"" + flag + "\" for \\summation");
+			p.errorOnLine("Unknown argument \"" + flag + "\" for \\summation");
 	}
 
 	const size_t numArgs = argList->size();
 
 	if (numArgs > 3)
-		pi.errorOnLine("Too many arguments for \\summation");
+		p.errorOnLine("Too many arguments for \\summation");
 
 	bool inf = options->flags.find("inf") != options->flags.end();
 	bool lim = options->flags.find("lim") != options->flags.end();
@@ -65,5 +65,5 @@ void SummationReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 	else if (inf)
 		replacement += "^{\\infty}";
 
-	pi.replacements.emplace_back(start, pi.curr, std::move(replacement));
+	p.replacements.emplace_back(start, p.curr, std::move(replacement));
 }

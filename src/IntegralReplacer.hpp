@@ -8,7 +8,7 @@ class IntegralReplacer final : public Replacer {
 public:
 	IntegralReplacer();
 
-	void replace(const std::string& matchedKey, ParseInfo& pi) override;
+	void replace(const std::string& matchedKey, Parser& p) override;
 
 	bool shouldRecurse() const override { return true; }
 };
