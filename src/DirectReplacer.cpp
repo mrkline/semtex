@@ -7,10 +7,12 @@
 
 DirectReplacer::DirectReplacer()
 	: replacements(
+		 // Relationsl operators
 		{{"<--","\\leftarrow"}, {"-->","\\rightarrow"},
 		 {"<==","\\Leftarrow"}, {"==>","\\Rightarrow"},
 		 {"<-->","\\leftrightarrow"}, {"<==>","\\Leftrightarrow"},
 		 {"!=","\\neq"}, {">=","\\geq"}, {"<=","\\leq"},
+		 // Greek letters
 		 {"\"t", "\\theta"},
 		 {"\"w", "\\omega"},
 		 {"\"e", "\\varepsilon"},
@@ -43,7 +45,9 @@ DirectReplacer::DirectReplacer()
 		 {"\"F", "\\Phi"},
 		 {"\"G", "\\Gamma"},
 		 {"\"L", "\\Lambda"},
-		 {"\"X", "\\Xi"}})
+		 {"\"X", "\\Xi"},
+		 // Math functions
+		 {"\\sinc", "\\mathrm{sinc}"}})
 {
 	for (const auto& kp : replacements)
 		keySet.emplace(kp.first);
