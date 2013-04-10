@@ -149,25 +149,18 @@ void parseLoop(ParseInfo& pi, bool createReplacements)
 						auto it = r->getKeys().lower_bound(toSearch);
 						if (it == r->getKeys().end())
 							--it;
+						const auto itLen = it->length();
 
-						if (strncmp(pi.curr, it->c_str(), it->length()) == 0)
-							printf("Match! %s\n", it->c_str());
-						/*
-						//! \todo Could likely be optimized since we're now using a set
-						for (const auto& k : r->getKeys()) {
-							if (remaining > k.length() && // There are enough remaining characters to be our key
-							    strncmp(pi.curr, k.c_str(), k.length()) == 0 && // These characters match the key
-							    (pi.curr[k.length()] == '{' ||
-								 pi.curr[k.length()] == '[' ||
-								 !isalpha(pi.curr[k.length()]))) { // Not just part of key
-								matched = true;
-								shouldRecurse = r->shouldRecurse();
-								line = pi.currLine;
-								r->replace(k, pi);
-								break;
-							}
+						 // Don't attempt to match something that ends with characters and is followed by characters
+						 // (it might be some LaTeX command or something)
+						if (strncmp(pi.curr, it->c_str(), itLen) == 0 &&
+						    !(isalpha(pi.curr[itLen] && isalpha(pi.curr[itLen - 1])))) {
+							matched = true;
+							shouldRecurse = r->shouldRecurse();
+							line = pi.currLine;
+							r->replace(*it, pi);
+							break;
 						}
-						*/
 						if (matched)
 							break;
 					}
