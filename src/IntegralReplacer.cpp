@@ -2,7 +2,6 @@
 
 #include "IntegralReplacer.hpp"
 
-#include "ErrorHandling.hpp"
 #include "Exceptions.hpp"
 #include "FileParser.hpp"
 
@@ -18,27 +17,27 @@ void IntegralReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 	pi.curr += matchedKey.length();
 
 	std::unique_ptr<MacroOptions> options;
-	decltype(parseBracketArgs(pi)) argList;
+	decltype(pi.parseBracketArgs()) argList;
 	try {
-		options = parseMacroOptions(pi);
-		argList = parseBracketArgs(pi);
+		options = pi.parseMacroOptions();
+		argList = pi.parseBracketArgs();
 	}
 	catch (const Exceptions::InvalidInputException& ex) {
 		throw Exceptions::InvalidInputException(ex.message + " in \\integral", __FUNCTION__);
 	}
 
 	if (options->opts.size() != 0)
-		errorOnLine(pi, "\\integral does not take options");
+		pi.errorOnLine("\\integral does not take options");
 
 	for (const auto& flag : options->flags) {
 		if (acceptedFlags.find(flag) == acceptedFlags.end())
-			errorOnLine(pi, "Unknown argument \"" + flag + "\" for \\integral");
+			pi.errorOnLine("Unknown argument \"" + flag + "\" for \\integral");
 	}
 
 	const size_t numArgs = argList->size();
 
 	if (numArgs > 4)
-		errorOnLine(pi, "Too many arguments for \\integral");
+		pi.errorOnLine("Too many arguments for \\integral");
 
 	bool inf = options->flags.find("inf") != options->flags.end();
 	bool lim = options->flags.find("lim") != options->flags.end();

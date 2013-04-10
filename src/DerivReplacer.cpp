@@ -2,9 +2,8 @@
 
 #include "DerivReplacer.hpp"
 
-#include "ErrorHandling.hpp"
 #include "Exceptions.hpp"
-
+#include "FileParser.hpp"
 
 DerivReplacer::DerivReplacer()
 	: Replacer({"\\deriv"})
@@ -16,28 +15,28 @@ void DerivReplacer::replace(const std::string& matchedKey, ParseInfo& pi)
 	pi.curr += matchedKey.length();
 
 	std::unique_ptr<MacroOptions> options;
-	decltype(parseBracketArgs(pi)) argList;
+	decltype(pi.parseBracketArgs()) argList;
 	try {
-		options = parseMacroOptions(pi);
-		argList = parseBracketArgs(pi);
+		options = pi.parseMacroOptions();
+		argList = pi.parseBracketArgs();
 	}
 	catch (const Exceptions::InvalidInputException& ex) {
 		throw Exceptions::InvalidInputException(ex.message + " in \\integral", __FUNCTION__);
 	}
 
 	if (options->opts.size() != 0)
-		errorOnLine(pi, "\\unit does not take options");
+		pi.errorOnLine("\\unit does not take options");
 
 	if (options->flags.size() != 0)
-		errorOnLine(pi, "\\unit does not take flags");
+		pi.errorOnLine("\\unit does not take flags");
 
 	const size_t numArgs = argList->size();
 
 	if (numArgs < 1)
-		errorOnLine(pi, "\\unit needs at least one argument");
+		pi.errorOnLine("\\unit needs at least one argument");
 
 	if (numArgs > 3)
-		errorOnLine(pi, "\\unit only takes one to three arguments");
+		pi.errorOnLine("\\unit only takes one to three arguments");
 
 	std::string replacement = "\\frac{\\mathrm{d}";
 

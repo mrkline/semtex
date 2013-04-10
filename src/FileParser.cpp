@@ -2,7 +2,6 @@
 
 #include "FileParser.hpp"
 
-#include "ErrorHandling.hpp"
 #include "Exceptions.hpp"
 #include "Context.hpp"
 #include "DirectReplacer.hpp"
@@ -31,14 +30,14 @@ namespace { // Ensure these variables are accessible only within this file.
 	                                       &Replacers::ar}};
 }
 
-bool getStringTruthValue(const ParseInfo& pi, const std::string& str)
+bool ParseInfo::getStringTruthValue(const std::string& str)
 {
 	if (trueStrings.find(str) != trueStrings.end())
 		return true;
 	else if (falseStrings.find(str) != falseStrings.end())
 		return false;
 	else
-		errorOnLine(pi, "Unknown value for boolean argument");
+		errorOnLine("Unknown value for boolean argument");
 
 	// Make the compiler shut up about control reaching the end ofa a non-void function
 	return false;
@@ -70,7 +69,7 @@ void processFile(const std::string& file, Context& ctxt)
 		createModdedCopy = true;
 
 	ParseInfo pi(file, fileBuff.get(), fileBuff.get() + fileSize, ctxt);
-	parseLoop(pi, createModdedCopy);
+	pi.parseLoop(createModdedCopy);
 
 	if (ctxt.verbose && !ctxt.error)
 		printf("Done processing %s...\n", file.c_str());
@@ -111,40 +110,40 @@ void processFile(const std::string& file, Context& ctxt)
 	}
 }
 
-void parseLoop(ParseInfo& pi, bool createReplacements)
+void ParseInfo::parseLoop(bool createReplacements)
 {
-	const char* const first = pi.curr;
-	while (pi.curr < pi.end) {
+	const char* const first = curr;
+	while (curr < end) {
 		// Characters to the end of the file
-		const size_t remaining = pi.end - pi.curr;
+		const size_t remaining = end - curr;
 
 		// Ignore commented-out lines
-		if (pi.curr > first && *pi.curr == '%' && *(pi.curr - 1) != '\\') {
-			while (pi.curr < pi.end && *pi.curr != '\n' && *pi.curr != '\r')
-				++pi.curr;
-			readNewline(pi);
+		if (curr > first && *curr == '%' && *(curr - 1) != '\\') {
+			while (curr < end && *curr != '\n' && *curr != '\r')
+				++curr;
+			readNewline();
 		}
 		// If it's not-whitespace, try to match it to an include
-		else if (isgraph(*pi.curr)) {
+		else if (isgraph(*curr)) {
 			//! \todo Should we do this when recursing?
 			if ((remaining > kIncludeLen && // There are enough remaining characters to be our key
-			     strncmp(pi.curr, "\\include", kIncludeLen) == 0 && // These characters match the key
-			     (pi.curr[kIncludeLen] == '{' || isspace(pi.curr[kIncludeLen]))) // This is not just part of a key
+			     strncmp(curr, "\\include", kIncludeLen) == 0 && // These characters match the key
+			     (curr[kIncludeLen] == '{' || isspace(curr[kIncludeLen]))) // This is not just part of a key
 			    ||
 				(remaining > kInputLen &&
-			     strncmp(pi.curr, "\\input", kInputLen) == 0 &&
-			     (pi.curr[kInputLen] == '{' || isspace(pi.curr[kInputLen]))))
-				processInclude(pi);
+			     strncmp(curr, "\\input", kInputLen) == 0 &&
+			     (curr[kInputLen] == '{' || isspace(curr[kInputLen]))))
+				processInclude();
 			// Otherwise try to match it to a mapping
 			else {
 				bool matched = false;
 				bool shouldRecurse = false;
-				int line = pi.currLine;
+				int line = currLine;
 				if (createReplacements) { // Don't bother doing search and replace for files we won't modify
-					const char* endSearch = pi.curr + 1;
-					while (endSearch < pi.end && *endSearch != ' ' && *endSearch != '\r' && *endSearch != '\n')
+					const char* endSearch = curr + 1;
+					while (endSearch < end && *endSearch != ' ' && *endSearch != '\r' && *endSearch != '\n')
 						++endSearch;
-					std::string toSearch(pi.curr, endSearch);
+					std::string toSearch(curr, endSearch);
 					for (const auto& r : replacers) {
 						auto it = r->getKeys().lower_bound(toSearch);
 						if (it == r->getKeys().end())
@@ -153,12 +152,12 @@ void parseLoop(ParseInfo& pi, bool createReplacements)
 
 						 // Don't attempt to match something that ends with characters and is followed by characters
 						 // (it might be some LaTeX command or something)
-						if (strncmp(pi.curr, it->c_str(), itLen) == 0 &&
-						    !(isalpha(pi.curr[itLen] && isalpha(pi.curr[itLen - 1])))) {
+						if (strncmp(curr, it->c_str(), itLen) == 0 &&
+						    !(isalpha(curr[itLen] && isalpha(curr[itLen - 1])))) {
 							matched = true;
 							shouldRecurse = r->shouldRecurse();
-							line = pi.currLine;
-							r->replace(*it, pi);
+							line = currLine;
+							r->replace(*it, *this);
 							break;
 						}
 						if (matched)
@@ -168,11 +167,11 @@ void parseLoop(ParseInfo& pi, bool createReplacements)
 					// Recurse here. If a new replacement was made, create a ParsInfo for the replacement
 					// and scan through it. Repeat until no more replacements are found in the replacement.
 					if (matched && shouldRecurse) {
-						const std::string& toSubSearch = pi.replacements.back().replaceWith;
+						const std::string& toSubSearch = replacements.back().replaceWith;
 						const char* subStart = toSubSearch.c_str();
 						const char* subEnd = subStart + toSubSearch.size();
-						ParseInfo rpi(pi.filename, subStart, subEnd, pi.ctxt, line);
-						parseLoop(rpi, true); // Recurse using our new context
+						ParseInfo rpi(filename, subStart, subEnd, ctxt, line);
+						rpi.parseLoop(true); // Recurse using our new context
 						if (!rpi.replacements.empty()) {
 							std::string newRep;
 							const char* curr = subStart;
@@ -184,68 +183,68 @@ void parseLoop(ParseInfo& pi, bool createReplacements)
 								curr = r.end;
 							}
 							newRep.append(curr, rpi.end);
-							pi.replacements.back().replaceWith = std::move(newRep);
+							replacements.back().replaceWith = std::move(newRep);
 						}
 					}
 				}
 				if (!matched)
-					++pi.curr; // Try again next time
+					++curr; // Try again next time
 			}
 		}
 		// Otherwise just chomp some whitespace
 		else {
-			while (readNewline(pi));
-			eatWhitespace(pi);
+			while (readNewline());
+			eatWhitespace();
 		}
 	}
 }
 
-bool readNewline(ParseInfo& pi)
+bool ParseInfo::readNewline()
 {
-	if (pi.curr >= pi.end)
+	if (curr >= end)
 		return false;
 
-	if (*pi.curr == '\n' || *pi.curr == '\r') {
-		if (*pi.curr == '\r') {
-			if (pi.curr < pi.end - 1 && *(pi.curr + 1) == '\n') {
-				++pi.windowsNewlines;
-				pi.curr +=2;
+	if (*curr == '\n' || *curr == '\r') {
+		if (*curr == '\r') {
+			if (curr < end - 1 && *(curr + 1) == '\n') {
+				++windowsNewlines;
+				curr +=2;
 			}
 			else {
-				++pi.macNewlines;
-				++pi.curr;
+				++macNewlines;
+				++curr;
 			}
 		}
 
-		if (*pi.curr == '\n') {
-			if (pi.curr < pi.end - 1 && *(pi.curr + 1) == '\r') {
+		if (*curr == '\n') {
+			if (curr < end - 1 && *(curr + 1) == '\r') {
 				// Rare, but possible
-				++pi.windowsNewlines;
-				pi.curr +=2;
+				++windowsNewlines;
+				curr +=2;
 			}
 			else {
-				++pi.unixNewlines;
-				++pi.curr;
+				++unixNewlines;
+				++curr;
 			}
 		}
-		++pi.currLine;
+		++currLine;
 		return true;
 	}
 	return false;
 }
 
-void processInclude(ParseInfo& pi)
+void ParseInfo::processInclude()
 {
 	// For printing purposes, etc., determine if it is \include or \input
-	bool isInclude = pi.curr[3] == 'c';
+	bool isInclude = curr[3] == 'c';
 
 	// Increment curr appropriately
-	pi.curr += isInclude ? kIncludeLen : kInputLen;
+	curr += isInclude ? kIncludeLen : kInputLen;
 
 	//! Get our args
 	std::unique_ptr<std::vector<std::string>> args;
 	try {
-		args = parseBracketArgs(pi);
+		args = parseBracketArgs();
 	}
 	catch (const Exceptions::InvalidInputException& ex) {
 		throw Exceptions::InvalidInputException(ex.message + " for \\include or \\import", __FUNCTION__);
@@ -253,7 +252,7 @@ void processInclude(ParseInfo& pi)
 
 	// We should only have one arg
 	if (args->size() != 1) {
-		errorOnLine(pi, "\\include and \\input only take a single, unnamed argument");
+		errorOnLine("\\include and \\input only take a single, unnamed argument");
 	}
 
 	const std::string& filename = (*args)[0];
@@ -262,15 +261,15 @@ void processInclude(ParseInfo& pi)
 		std::string fullName = filename + ext;
 		using namespace boost::filesystem;
 		if (exists(symlink_status(fullName))) {
-			if (pi.ctxt.verbose && !pi.ctxt.error)
+			if (ctxt.verbose && !ctxt.error)
 				printf("Adding %s to the list of files to be processed\n", fullName.c_str());
 
-			pi.ctxt.queue.enqueue(std::move(fullName));
+			ctxt.queue.enqueue(std::move(fullName));
 		}
 	}
 }
 
-std::unique_ptr<MacroOptions> parseMacroOptions(ParseInfo& pi) {
+std::unique_ptr<MacroOptions> ParseInfo::parseMacroOptions() {
 	// Regex for matching args
 
 	//! An unquoted, unnamed arg, such as [ myArg ]
@@ -287,45 +286,45 @@ std::unique_ptr<MacroOptions> parseMacroOptions(ParseInfo& pi) {
 
 	std::unique_ptr<MacroOptions> ret(new MacroOptions);
 
-	eatWhitespace(pi);
+	eatWhitespace();
 	// Accept one newline and more whitespace, then demand a [
-	if (readNewline(pi)) {
-		eatWhitespace(pi);
+	if (readNewline()) {
+		eatWhitespace();
 	}
 
-	if (pi.curr >= pi.end)
-		errorOnLine(pi, "End of file reached before finding arguments");
+	if (curr >= end)
+		errorOnLine("End of file reached before finding arguments");
 
-	if (*pi.curr != '[')
+	if (*curr != '[')
 		return ret;
 
-	++pi.curr;
+	++curr;
 
 	// Argument parsing loop
 	bool needsCommaNext = false;
 	bool lastTokenWasComma = false;
 	while (true) {
-		eatWhitespace(pi);
-		if (readNewline(pi)) {
-			eatWhitespace(pi);
+		eatWhitespace();
+		if (readNewline()) {
+			eatWhitespace();
 			// We cannot have two newlines in a row during an option list. Make sure we don't get another
-			if (readNewline(pi))
-				errorOnLine(pi, "A new paragraph was found in the middle of the options list");
+			if (readNewline())
+				errorOnLine("A new paragraph was found in the middle of the options list");
 		}
 		// Prepare the string to pass to regex (the current line)
-		const char* argEnd = pi.curr + 1;
-		while(argEnd <= pi.end && *argEnd != '\r' && *argEnd != '\n')
+		const char* argEnd = curr + 1;
+		while(argEnd <= end && *argEnd != '\r' && *argEnd != '\n')
 			++argEnd;
 
 		boost::cmatch argMatch;
-		if (!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, quotedNamed)) {
+		if (!needsCommaNext && boost::regex_search(curr, argEnd, argMatch, quotedNamed)) {
 			std::string newArgName(argMatch[1].first, argMatch[1].second);
 			// Make sure this option doesn't already exist
 			if (ret->opts.find(newArgName) != ret->opts.end())
-				errorOnLine(pi, "Duplicate option");
+				errorOnLine("Duplicate option");
 
 			ret->opts[newArgName] = std::string(argMatch[2].first, argMatch[2].second);
-			pi.curr = argMatch[0].second;
+			curr = argMatch[0].second;
 			if (argMatch[3].matched) {
 				if (*argMatch[3].first == ']')
 					break;
@@ -336,14 +335,14 @@ std::unique_ptr<MacroOptions> parseMacroOptions(ParseInfo& pi) {
 			}
 			needsCommaNext = !lastTokenWasComma;
 		}
-		else if (!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, unquotedNamed)) {
+		else if (!needsCommaNext && boost::regex_search(curr, argEnd, argMatch, unquotedNamed)) {
 			std::string newArgName(argMatch[1].first, argMatch[1].second);
 			// Make sure this option doesn't already exist
 			if (ret->opts.find(newArgName) != ret->opts.end())
-				errorOnLine(pi, "Duplicate option");
+				errorOnLine("Duplicate option");
 
 			ret->opts[newArgName] = std::string(argMatch[2].first, argMatch[2].second);
-			pi.curr = argMatch[0].second;
+			curr = argMatch[0].second;
 			if (argMatch[3].matched) {
 				if (*argMatch[3].first == ']')
 					break;
@@ -354,14 +353,14 @@ std::unique_ptr<MacroOptions> parseMacroOptions(ParseInfo& pi) {
 			}
 			needsCommaNext = !lastTokenWasComma;
 		}
-		else if(!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, quoted)) {
+		else if(!needsCommaNext && boost::regex_search(curr, argEnd, argMatch, quoted)) {
 			std::string flag(argMatch[1].first, argMatch[1].second);
 			// Make sure this option doesn't already exist
 			if (ret->flags.find(flag) != ret->flags.end())
-				errorOnLine(pi, "Duplicate flag");
+				errorOnLine("Duplicate flag");
 
 			ret->flags.insert(std::move(flag));
-			pi.curr = argMatch[0].second;
+			curr = argMatch[0].second;
 			if (argMatch[2].matched) {
 				if (*argMatch[2].first == ']')
 					break;
@@ -372,14 +371,15 @@ std::unique_ptr<MacroOptions> parseMacroOptions(ParseInfo& pi) {
 			}
 			needsCommaNext = !lastTokenWasComma;
 		}
-		else if (!needsCommaNext && boost::regex_search(pi.curr, argEnd, argMatch, unquoted)) {
+		else if (!needsCommaNext && boost::regex_search(curr, argEnd, argMatch, unquoted)) {
 			std::string flag(argMatch[1].first, argMatch[1].second);
 			// Make sure this option doesn't already exist
 			if (ret->flags.find(flag) != ret->flags.end())
-				errorOnLine(pi, "Duplicate flag");
+				errorOnLine("Duplicate flag");
 
 			ret->flags.insert(std::move(flag));
-			pi.curr = argMatch[0].second;
+			curr = argMatch[0].second;
+
 			if (argMatch[2].matched) {
 				if (*argMatch[2].first == ']')
 					break;
@@ -390,7 +390,7 @@ std::unique_ptr<MacroOptions> parseMacroOptions(ParseInfo& pi) {
 			}
 			needsCommaNext = !lastTokenWasComma;
 		}
-		else if (boost::regex_search(pi.curr, argEnd, argMatch, spacedComma)) {
+		else if (boost::regex_search(curr, argEnd, argMatch, spacedComma)) {
 			/*
 			 * Allow for stupid crap like:
 			 * "myArg
@@ -398,14 +398,14 @@ std::unique_ptr<MacroOptions> parseMacroOptions(ParseInfo& pi) {
 			 * "myArg2
 			 */
 			if (lastTokenWasComma)
-				errorOnLine(pi, "Missing option (double commas)");
+				errorOnLine("Missing option (double commas)");
 
-			pi.curr = argMatch[0].second;
+			curr = argMatch[0].second;
 			lastTokenWasComma = true;
 			needsCommaNext = false;
 		}
 		else {
-			errorOnLine(pi, "Invalid option");
+			errorOnLine("Invalid option");
 		}
 
 	}
@@ -413,43 +413,50 @@ std::unique_ptr<MacroOptions> parseMacroOptions(ParseInfo& pi) {
 	return ret;
 }
 
-std::unique_ptr<std::vector<std::string>> parseBracketArgs(ParseInfo& pi)
+std::unique_ptr<std::vector<std::string>> ParseInfo::parseBracketArgs()
 {
 	std::unique_ptr<std::vector<std::string>> ret(new std::vector<std::string>);
 
-	const char* argsEnd = pi.curr;
+	const char* argsEnd = curr;
 	while (true) {
-		eatWhitespace(pi);
+		eatWhitespace();
 		// Accept one newline and more whitespace, then demand a {
-		if (readNewline(pi)) {
-			eatWhitespace(pi);
+		if (readNewline()) {
+			eatWhitespace();
 		}
 
-		if (pi.curr >= pi.end || *pi.curr != '{')
+		if (curr >= end || *curr != '{')
 			break;
 
-		const char* argStart = ++pi.curr; // Advance to the first character of the argument (after the '{')
+		const char* argStart = ++curr; // Advance to the first character of the argument (after the '{')
 		int braceLevel = 1;
 
 		while (braceLevel > 0) {
-			if (pi.curr >= pi.end)
-				errorOnLine(pi, "End of file reached before finding end of argument");
+			if (curr >= end)
+				errorOnLine("End of file reached before finding end of argument");
 
-			if (*pi.curr == '\r' || *pi.curr == '\n') {
-				readNewline(pi);
+			if (*curr == '\r' || *curr == '\n') {
+				readNewline();
 			}
 			else {
-				if (*pi.curr == '{' && *(pi.curr - 1) != '\\')
+				if (*curr == '{' && *(curr - 1) != '\\')
 					++braceLevel;
-				else if (*pi.curr == '}' && *(pi.curr - 1) != '\\')
+				else if (*curr == '}' && *(curr - 1) != '\\')
 					--braceLevel;
 
-				++pi.curr;
+				++curr;
 			}
 		}
-		ret->emplace_back(argStart, pi.curr - 1);
-		argsEnd = pi.curr;
+		ret->emplace_back(argStart, curr - 1);
+		argsEnd = curr;
 	}
-	pi.curr = argsEnd;
+	curr = argsEnd;
 	return ret;
+}
+
+void ParseInfo::errorOnLine(const std::string& msg)
+{
+		std::stringstream err;
+		err << filename << ":" << currLine << ": " << msg;
+		throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
 }

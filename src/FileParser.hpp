@@ -33,37 +33,75 @@ struct MacroOptions {
 };
 
 struct ParseInfo {
-	const std::string filename;
-	const char* curr;
+
+public:
+	// No need for encapsulation since nearly everything that interacts with ParseInfo modifies these members
+	//! \todo Would a linked list run faster?
+	std::vector<Replacement> replacements;
 	const char* const end;
+	const char* curr;
+
+	ParseInfo(const std::string& file, const char* current, const char* end, Context& context, int startingLine = 1)
+		: replacements(), end(end), curr(current), filename(file), currLine(startingLine),
+		  unixNewlines(0), windowsNewlines(0), macNewlines(0), ctxt(context)
+	{ }
+
+	/*!
+	 * \brief Used to parse a true or false value (usually from an argument)
+	 * \param str The string to examine
+	 * \returns true for strings like "true", "True", "TRUE", "t", "T", "y", "Y", "yes", "Yes", "1", or
+	 *          false for strings like "false", "False", "FALSE", "f", "F", "n", "N", "no", "No", "0"
+	 * \throws InvalidInputException if the string matches neither of these groups
+	 */
+	bool getStringTruthValue(const std::string& str);
+
+	//! The loop that pareses through an entire character sequence specified by the provided ParseInfo
+	void parseLoop(bool createReplacements);
+
+	//! Reads tabs and spaces until a non-whitespace character or a newline is hit
+	inline void eatWhitespace()
+	{
+		while (curr < end && std::isblank(*curr))
+			++curr;
+	}
+
+	//! Tries to read a newline at the current location
+	//! \returns true if a newline was read
+	bool readNewline();
+
+	//! Called when we hit a \\include or \\input
+	//! When the function returns, pi.curr is moved past the \\include statement
+	void processInclude();
+
+	/*!
+	 * \brief Parses SemTeX macro options (e.g. \\macro[these]{not, these}).
+	 * \returns A heap-allocated MacroArgs struct containing the arguments
+	 * \todo Would stack allocation be better?
+	 *
+	 * When the function returns, curr is moved past the arguments
+	 */
+	std::unique_ptr<MacroOptions> parseMacroOptions();
+
+	std::unique_ptr<std::vector<std::string>> parseBracketArgs();
+
+	/*!
+	 * \brief A method for throwing standardized exceptions for input errors
+	 * \param msg The error-specific message to attach to the exception
+	 */
+	void errorOnLine(const std::string& msg);
+
+	// No copy or assignment
+	ParseInfo(const ParseInfo&) = delete;
+	ParseInfo& operator=(const ParseInfo&) = delete;
+
+private:
+	const std::string filename;
 	int currLine;
 	int unixNewlines;
 	int windowsNewlines;
 	int macNewlines;
 	Context& ctxt;
-
-	//! \todo Would a linked list run faster?
-	std::vector<Replacement> replacements;
-
-	ParseInfo(const std::string& file, const char* current, const char* end, Context& context, int startingLine = 1)
-		: filename(file), curr(current), end(end), currLine(startingLine),
-		  unixNewlines(0), windowsNewlines(0), macNewlines(0), ctxt(context), replacements()
-	{ }
-
-	// No copy or assignment
-	ParseInfo(const ParseInfo&) = delete;
-	ParseInfo& operator=(const ParseInfo&) = delete;
 };
-
-/*!
- * \brief Used to parse a true or false value (usually from an argument)
- * \param pi Used to get the current line number for possible error reporting
- * \param str The string to examine
- * \returns true for strings like "true", "True", "TRUE", "t", "T", "y", "Y", "yes", "Yes", "1", or
- *          false for strings like "false", "False", "FALSE", "f", "F", "n", "N", "no", "No", "0"
- * \throws InvalidInputException if the string matches neither of these groups
- */
-bool getStringTruthValue(const ParseInfo& pi, const std::string& str);
 
 /*!
  * \brief Processes a SemTeX file, generating a corresponding LaTeX file and adding included SemTeX files
@@ -72,34 +110,4 @@ bool getStringTruthValue(const ParseInfo& pi, const std::string& str);
  * \param ctxt The global context (verbosity level, queues, etc.)
  */
 void processFile(const std::string& filename, Context& ctxt);
-
-//! The loop that pareses through an entire character sequence specified by the provided ParseInfo
-void parseLoop(ParseInfo& pi, bool createReplacements);
-
-//! Reads tabs and spaces until a non-whitespace character or a newline is hit
-inline void eatWhitespace(ParseInfo& pi)
-{
-	while (pi.curr < pi.end && std::isblank(*pi.curr))
-		++pi.curr;
-}
-
-//! Tries to read a newline at the current location
-//! \returns true if a newline was read
-bool readNewline(ParseInfo& pi);
-
-//! Called when we hit a \\include or \\input
-//! When the function returns, pi.curr is moved past the \\include statement
-void processInclude(ParseInfo& pi);
-
-/*!
- * \brief Parses SemTeX macro options (e.g. \\macro[these]{not, these}).
- * \returns A heap-allocated MacroArgs struct containing the arguments
- * \todo Would stack allocation be better?
- *
- * When the function returns, pi.curr is moved past the arguments
- */
-std::unique_ptr<MacroOptions> parseMacroOptions(ParseInfo& pi);
-
-std::unique_ptr<std::vector<std::string>> parseBracketArgs(ParseInfo& pi);
-
 #endif
