@@ -457,6 +457,13 @@ std::unique_ptr<std::vector<std::string>> Parser::parseBracketArgs()
 void Parser::errorOnLine(const std::string& msg)
 {
 		std::stringstream err;
-		err << filename << ":" << currLine << ": " << msg;
+		err << filename << ":" << currLine << ": error: " << msg;
 		throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
+}
+
+void Parser::warningOnLine(const std::string& msg)
+{
+		std::stringstream err;
+		err << filename << ":" << currLine << ": warning: " << msg;
+		printf("%s\n", err.str().c_str());
 }

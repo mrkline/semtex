@@ -5,7 +5,7 @@
 #include "Exceptions.hpp"
 #include "FileParser.hpp"
 
-static std::unordered_set<std::string> acceptedFlags({"inf", "lim"});
+static std::unordered_set<std::string> acceptedFlags({"inf", "lim", "mir"});
 
 SummationReplacer::SummationReplacer()
 	: Replacer({"\\summ"})
@@ -41,6 +41,7 @@ void SummationReplacer::replace(const std::string& matchedKey, Parser& p)
 
 	bool inf = options->flags.find("inf") != options->flags.end();
 	bool lim = options->flags.find("lim") != options->flags.end();
+	bool mir = options->flags.find("mir") != options->flags.end();
 
 	// Arg 0 is the counting variable
 	// Arg 1 is the lower bound
@@ -49,12 +50,19 @@ void SummationReplacer::replace(const std::string& matchedKey, Parser& p)
 	const std::string* lower = numArgs >= 2 && !argList->at(1).empty() ? &argList->at(1) : nullptr;
 	const std::string* upper = numArgs >= 3 && !argList->at(2).empty() ? &argList->at(2) : nullptr;
 
+	if (mir && upper != nullptr)
+		p.warningOnLine("\\summ is ignoring the \"mirror bounds\" option since two bounds were provided.");
+
+	if (!mir && inf && upper != nullptr && lower != nullptr)
+		p.warningOnLine("\\summ is ignoring the \"infinity bounds\" option since two bounds were provided.");
+
+
 	std::string replacement = "\\sum";
 	if ((upper != nullptr || lower != nullptr || inf) && lim)
 		replacement += "\\limits";
 
 	if (lower != nullptr)
-		replacement += "_{" + (wrt != nullptr ? *wrt + "=" : "") + *lower + "}";
+		replacement += "_{" + (wrt != nullptr ? *wrt + "=" : "") + ((mir ? "-" : "") + *lower) + "}";
 	else if (inf)
 		replacement += "_{"+ (wrt != nullptr ? *wrt + "=" : "") + "-\\infty}";
 	else if (wrt != nullptr)
@@ -62,6 +70,8 @@ void SummationReplacer::replace(const std::string& matchedKey, Parser& p)
 
 	if (upper != nullptr)
 		replacement += "^{" + *upper + "}";
+	else if (mir && lower != nullptr)
+		replacement += "^{" + *lower + "}";
 	else if (inf)
 		replacement += "^{\\infty}";
 

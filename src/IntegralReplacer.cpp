@@ -5,7 +5,7 @@
 #include "Exceptions.hpp"
 #include "FileParser.hpp"
 
-static std::unordered_set<std::string> acceptedFlags({"inf", "lim"});
+static std::unordered_set<std::string> acceptedFlags({"inf", "lim", "mir"});
 
 IntegralReplacer::IntegralReplacer()
 	: Replacer({"\\integral"})
@@ -41,6 +41,7 @@ void IntegralReplacer::replace(const std::string& matchedKey, Parser& p)
 
 	bool inf = options->flags.find("inf") != options->flags.end();
 	bool lim = options->flags.find("lim") != options->flags.end();
+	bool mir = options->flags.find("mir") != options->flags.end();
 
 	// Arg 0 is the expression
 	// Arg 1 is with respect to (d_)
@@ -51,17 +52,25 @@ void IntegralReplacer::replace(const std::string& matchedKey, Parser& p)
 	const std::string* lower = numArgs >= 3 && !argList->at(2).empty() ? &argList->at(2) : nullptr;
 	const std::string* upper = numArgs >= 4 && !argList->at(3).empty() ? &argList->at(3) : nullptr;
 
+	if (mir && upper != nullptr)
+		p.warningOnLine("\\integral is ignoring the \"mirror bounds\" option since two bounds were provided.");
+
+	if (!mir && inf && upper != nullptr && lower != nullptr)
+		p.warningOnLine("\\integral is ignoring the \"infinity bounds\" option since two bounds were provided.");
+
 	std::string replacement = "\\int";
 	if ((lower != nullptr || upper != nullptr || inf) && lim)
 		replacement += "\\limits";
 
 	if (lower != nullptr)
-		replacement += "_{" + *lower + "}";
+		replacement += "_{" + ((mir ? "-" : "") + *lower) + "}";
 	else if (inf)
 		replacement += "_{-\\infty}";
 
 	if (upper != nullptr)
 		replacement += "^{" + *upper + "}";
+	else if (mir && lower != nullptr)
+		replacement +=  "^{" + *lower + "}";
 	else if (inf)
 		replacement += "^{\\infty}";
 

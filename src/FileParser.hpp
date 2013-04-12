@@ -87,8 +87,15 @@ public:
 	/*!
 	 * \brief A method for throwing standardized exceptions for input errors
 	 * \param msg The error-specific message to attach to the exception
+	 * \throws InvalidInputException always
 	 */
 	void errorOnLine(const std::string& msg);
+
+	/*!
+	 * \brief A method for printing standardized warnings for input issues
+	 * \param msg The warning-specific message to print after the file and line number
+	 */
+	void warningOnLine(const std::string& msg);
 
 	// No copy or assignment
 	Parser(const Parser&) = delete;
