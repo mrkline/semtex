@@ -45,7 +45,7 @@ void SummationReplacer::replace(const std::string& matchedKey, Parser& p)
 	// Arg 0 is the counting variable
 	// Arg 1 is the lower bound
 	// Arg 2 is the upper bound
-	const std::string* wrt = numArgs >= 1 ? &argList->at(0) : nullptr;
+	const std::string* wrt = numArgs >= 1 && !argList->at(0).empty() ? &argList->at(0) : nullptr;
 	const std::string* lower = numArgs >= 2 && !argList->at(1).empty() ? &argList->at(1) : nullptr;
 	const std::string* upper = numArgs >= 3 && !argList->at(2).empty() ? &argList->at(2) : nullptr;
 

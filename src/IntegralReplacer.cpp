@@ -46,25 +46,30 @@ void IntegralReplacer::replace(const std::string& matchedKey, Parser& p)
 	// Arg 1 is with respect to (d_)
 	// Arg 2 is the lower bound
 	// Arg 3 is the upper bound
+	const std::string* expr = numArgs >= 1 && !argList->at(0).empty() ? &argList->at(0) : nullptr;
+	const std::string* wrt = numArgs >= 2 && !argList->at(1).empty() ? &argList->at(1) : nullptr;
+	const std::string* lower = numArgs >= 3 && !argList->at(2).empty() ? &argList->at(2) : nullptr;
+	const std::string* upper = numArgs >= 4 && !argList->at(3).empty() ? &argList->at(3) : nullptr;
 
 	std::string replacement = "\\int";
-	if ((numArgs >= 3 || inf) && lim)
+	if ((lower != nullptr || upper != nullptr || inf) && lim)
 		replacement += "\\limits";
 
-	if (numArgs >= 3 && !argList->at(2).empty())
-		replacement += "_{" + argList->at(2) + "}";
+	if (lower != nullptr)
+		replacement += "_{" + *lower + "}";
 	else if (inf)
 		replacement += "_{-\\infty}";
 
-	if (numArgs >= 4 && !argList->at(3).empty())
-		replacement += "^{" + argList->at(3) + "}";
+	if (upper != nullptr)
+		replacement += "^{" + *upper + "}";
 	else if (inf)
 		replacement += "^{\\infty}";
 
-	replacement += " " + argList->at(0);
+	if (expr != nullptr)
+		replacement += " " + *expr;
 
-	if (numArgs >= 2)
-		replacement += "\\,\\mathrm{d}" + argList->at(1);
+	if (wrt != nullptr)
+		replacement += "\\,\\mathrm{d}" + *wrt;
 
 	p.replacements.emplace_back(start, p.curr, std::move(replacement));
 }

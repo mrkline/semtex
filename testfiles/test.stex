@@ -16,4 +16,5 @@ SemTeX Test
 \end{center}
 
 \input{features}
+\input{additional}
 \end{document}
