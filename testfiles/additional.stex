@@ -4,3 +4,4 @@
 \[\summ[mir]{n}{T_1 / 2}\]
 \[\integral[mir]{x}{x}{T_1 / 2}\]
 \[\integral[mir]{x}{x}{T_1 / 2}{b}\]
+\[\integral[inf] x(t)\]

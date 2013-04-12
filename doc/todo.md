@@ -1,5 +1,4 @@
 - Update woefully outdated README
-- Fix OOB caused by `\integral[inf] x(t)`
 - Provide shortened version of `\widetilde` and `\overline` ?
 - Make `\integral` shorter, like `\summ`?
 - `\wrt` tag that expands to end of integral (`\,\mathrm{d}<stuff>`)?
