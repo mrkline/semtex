@@ -18,6 +18,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 #include <tclap/CmdLine.h>

@@ -32,7 +32,7 @@ struct MacroOptions {
 	MacroOptions() : flags(), opts() { }
 };
 
-struct Parser {
+class Parser {
 
 public:
 	// No need for encapsulation since nearly everything that interacts with Parser modifies these members
@@ -84,18 +84,20 @@ public:
 
 	std::unique_ptr<std::vector<std::string>> parseBracketArgs();
 
+	std::string getMostCommonNewline() const;
+
 	/*!
 	 * \brief A method for throwing standardized exceptions for input errors
 	 * \param msg The error-specific message to attach to the exception
 	 * \throws InvalidInputException always
 	 */
-	void errorOnLine(const std::string& msg);
+	void errorOnLine(const std::string& msg) const;
 
 	/*!
 	 * \brief A method for printing standardized warnings for input issues
 	 * \param msg The warning-specific message to print after the file and line number
 	 */
-	void warningOnLine(const std::string& msg);
+	void warningOnLine(const std::string& msg) const;
 
 	// No copy or assignment
 	Parser(const Parser&) = delete;

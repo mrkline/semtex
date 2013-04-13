@@ -92,10 +92,12 @@ void processFile(const std::string& file, Context& ctxt)
 			outfile.write(fileBuff.get(), fileSize);
 		}
 		else {
-			// TODO: Replace all newlines in replacements with the most commonly found newline in the file,
-			//       perhaps using boost::replace_all
+
 			const char* curr = fileBuff.get();
-			for (const auto& r : p.replacements) {
+			std::string mostCommonNewline = p.getMostCommonNewline();
+			for (auto& r : p.replacements) {
+				// Replace all newlines in replacements with the most commonly found newline in the file,
+				boost::replace_all(r.replaceWith, "\n", mostCommonNewline);
 				// Write from the current location up to the start of the replacement
 				outfile.write(curr, std::distance(curr, r.start));
 				// Write the replacement
@@ -454,14 +456,25 @@ std::unique_ptr<std::vector<std::string>> Parser::parseBracketArgs()
 	return ret;
 }
 
-void Parser::errorOnLine(const std::string& msg)
+std::string Parser::getMostCommonNewline() const
+{
+	if (unixNewlines >= windowsNewlines && unixNewlines >= macNewlines)
+		return "\n";
+	else if (windowsNewlines >= macNewlines)
+		return "\r\n";
+	else
+		return "\n";
+}
+
+
+void Parser::errorOnLine(const std::string& msg) const
 {
 		std::stringstream err;
 		err << filename << ":" << currLine << ": error: " << msg;
 		throw Exceptions::InvalidInputException(err.str(), __FUNCTION__);
 }
 
-void Parser::warningOnLine(const std::string& msg)
+void Parser::warningOnLine(const std::string& msg) const
 {
 		std::stringstream err;
 		err << filename << ":" << currLine << ": warning: " << msg;
