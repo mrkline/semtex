@@ -2,6 +2,4 @@
 - Provide shortened version of `\widetilde` and `\overline` ?
 - Make `\integral` shorter, like `\summ`?
 - `\wrt` tag that expands to end of integral (`\,\mathrm{d}<stuff>`)?
-- Use `set` members to speed up key lookup?
-- Make parsing functions that take a ParseInfo as a reference members of ParseInfo, and make it a class
 - Have errors and warnings reported on the line the problem starts on, not the one it ends on.
