@@ -274,25 +274,21 @@ void Parser::processInclude()
 std::unique_ptr<MacroOptions> Parser::parseMacroOptions() {
 	// Regex for matching args
 
-	//! An unquoted, unnamed arg, such as [ myArg ]
+	// An unquoted, unnamed arg, such as [ myArg ]
 	static boost::regex unquoted(R"regex(^\s*([^"=,\]]*\s*[^"=,\]\s]+)\s*(,|\])?)regex", boost::regex::optimize);
-	//! A quoted, unnamed arg, such as [ "myArg" ]
+	// A quoted, unnamed arg, such as [ "myArg" ]
 	static boost::regex quoted(R"regex(^\s*"([^"]+)"\s*(,|\])?)regex", boost::regex::optimize);
-	//! An unquoted, named arg, sugh as [ foo = bar ]
+	// An unquoted, named arg, sugh as [ foo = bar ]
 	static boost::regex unquotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*([^"=,\]]*\s*[^"=,\]\s]+)\s*(,|\])?)regex",
 	                                  boost::regex::optimize);
-	//! A quoted, named arg, sugh as [ foo = "bar" ]
+	// A quoted, named arg, sugh as [ foo = "bar" ]
 	static boost::regex quotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*"([^"]+)"\s*(,|\])?)regex", boost::regex::optimize);
-	//! A comma, separating args
+	// A comma, separating args
 	static boost::regex spacedComma(R"regex(^\s*,\s*)regex", boost::regex::optimize);
 
 	std::unique_ptr<MacroOptions> ret(new MacroOptions);
 
-	eatWhitespace();
-	// Accept one newline and more whitespace, then demand a [
-	if (readNewline()) {
-		eatWhitespace();
-	}
+	readToNextLineText();
 
 	if (curr >= end)
 		errorOnLine("End of file reached before finding arguments");
@@ -421,11 +417,7 @@ std::unique_ptr<std::vector<std::string>> Parser::parseBracketArgs()
 
 	const char* argsEnd = curr;
 	while (true) {
-		eatWhitespace();
-		// Accept one newline and more whitespace, then demand a {
-		if (readNewline()) {
-			eatWhitespace();
-		}
+		readToNextLineText();
 
 		if (curr >= end || *curr != '{')
 			break;

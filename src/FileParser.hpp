@@ -59,7 +59,7 @@ public:
 	void parseLoop(bool createReplacements);
 
 	//! Reads tabs and spaces until a non-whitespace character or a newline is hit
-	inline void eatWhitespace()
+	void eatWhitespace()
 	{
 		while (curr < end && std::isblank(*curr))
 			++curr;
@@ -69,21 +69,44 @@ public:
 	//! \returns true if a newline was read
 	bool readNewline();
 
+	/*!
+	 * \brief Reads whitespace, a newline (if reached), and more whitespace.
+	 *
+	 * Assuming curr starts on trailing whitespace or EOL, this should advance
+	 * us past any indentation to the text on the next line
+	 */
+	void readToNextLineText()
+	{
+		eatWhitespace();
+		// Accept one newline and more whitespace, then demand a [
+		if (readNewline()) {
+			eatWhitespace();
+		}
+	}
+
 	//! Called when we hit a \\include or \\input
 	//! When the function returns, p.curr is moved past the \\include statement
 	void processInclude();
 
 	/*!
 	 * \brief Parses SemTeX macro options (e.g. \\macro[these]{not, these}).
-	 * \returns A heap-allocated MacroArgs struct containing the arguments
+	 * \returns A heap-allocated MacroArgs struct containing the options and flags
+	 * \todo Would stack allocation be better?
+	 *
+	 * When the function returns, curr is moved past the options section
+	 */
+	std::unique_ptr<MacroOptions> parseMacroOptions();
+
+	/*!
+	 * \brief Parses SemTeX arguments (e.g. \\macro[not these]{but, these}).
+	 * \returns A heap-allocated vector containing the arguments
 	 * \todo Would stack allocation be better?
 	 *
 	 * When the function returns, curr is moved past the arguments
 	 */
-	std::unique_ptr<MacroOptions> parseMacroOptions();
-
 	std::unique_ptr<std::vector<std::string>> parseBracketArgs();
 
+	//! Returns the most commonly used newline type in the file being parsed.
 	std::string getMostCommonNewline() const;
 
 	/*!
@@ -104,12 +127,12 @@ public:
 	Parser& operator=(const Parser&) = delete;
 
 private:
-	const std::string filename;
-	int currLine;
-	int unixNewlines;
-	int windowsNewlines;
-	int macNewlines;
-	Context& ctxt;
+	const std::string filename; //!< Name of the file being parsed
+	int currLine; //!< Current line as the parser progresses
+	int unixNewlines; //!< Number of Unix newlines found in the file
+	int windowsNewlines; //!< Number of Windows newlines found in the file
+	int macNewlines; //!< Number of Mac newlines found in the file
+	Context& ctxt; //!< Global context (error state, etc.)
 };
 
 /*!
@@ -119,4 +142,5 @@ private:
  * \param ctxt The global context (verbosity level, queues, etc.)
  */
 void processFile(const std::string& filename, Context& ctxt);
+
 #endif
