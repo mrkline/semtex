@@ -126,7 +126,7 @@ void Parser::parseLoop(bool createReplacements)
 			readNewline();
 		}
 		// If it's not-whitespace, try to match it to an include
-		else if (isgraph(*curr)) {
+		else if (isgraph(*curr) || *curr < 0 /* unicode */) {
 			//! \todo Should we do this when recursing?
 			if ((remaining > kIncludeLen && // There are enough remaining characters to be our key
 			     strncmp(curr, "\\include", kIncludeLen) == 0 && // These characters match the key
