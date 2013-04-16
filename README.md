@@ -6,32 +6,39 @@ SemTeX is a preprocessor for LaTeX which intends to make creating LaTeX document
 
 ### Syntax
 
-- SemTeX generally accepts macros in the form of `\macroname{arg1, arg2}`. This is to keep SemTeX from looking out
+- SemTeX generally accepts macros in the form of `\macroname{arg1}{arg2}`. This is to keep SemTeX from looking out
   of place alongside normal LaTeX.
-- Arguments that contain characters like `{`, `}`, and `,` can be enclosed in double quotes, i.e.
-  `\macroname{"foo, bar", "biz{baz}"}`
-- Arguments have optional names, e.g. `\macroname{arg1=one, arg2="two{foo}"}`
-- Some macros have optional arguments. For example, the macro to create an integral `\integral`, has an optional
-  `inf` argument that, when set to some form of true (`true`, `1`, `t`, etc.), fills in the bounds with infinity.  
-  (i.e. `\integral{f(x), x, inf=t}` becomes `\int_{-\infty}^{\infty} ...`)
+- Arguments can be nested contain characters like `{`, `}`
+- Some macros have options that can be set. For example, the macro to create an integral `\integral`, has an `inf`
+  option that fills in the bounds with infinity.
+  (i.e. `\integral[inf]{f(x)}{x}` becomes `\int_{-\infty}^{\infty} ...`)
 
-- All unnamed arguments must go before named ones. Named arguments can be presented in any order.
+### Implemented Features
+
+#### Basic Replacements
+
+- `-->` expands to `\rightarrow`, `==>` expands to `\Rightarrow`, `\<==>` expands to `\Leftrightarrow`, etc.
+
+- `!=` expands to `\neq`, `>=` expands to `\geq`, `<=` expands to `\leq`, etc.
+
+- `"w` expands to `\omega`, `"p` expands to `\pi`, `"F` expands to `\Phi`, etc.
+
+#### Macros
+
+- `\integral{f(x)}{x}{a}{b}` expands to `\int_{a}^{b} f(x)\, \mathrm{d}x`
+
+- `\summ{x}{a}{b}` expands to `\sum_{x=a}^{b}`
+  Both can take an "inf" option which will output `\int_{\infty}^{\infty}` and `\sum_{\infty}^{\infty}`, respectively,
+  if set. They can also take a "mir" option, which mirrors a single argument on both sides
+  (e.g. `\summ[mir]{x}{a}` becomes `\sum_{x = -a}^{a}`
+
+- `\deriv{y}{x}{2}` expands to `\frac{\mathrm{d}^{2}y}{\mathrm{d}x^{2}}`,
+  `\deriv{y}{x}` expands to `\frac{\mathrm{d}y}{\mathrm{d}x}`,
+  and `\deriv{x}` expands to `\frac{\mathrm{d}}{\mathrm{d}x}`.
+
+- `\unit{mV}` expands to `\,\mathrm{mV}`.
 
 ### Planned Features
-
-#### Basic replacements
-
-- `\integral{expr=f(x), wrt=x, from=a, to=b}` expands to `\int_{a}^{b} f(x)\, \mathrm{d}x`
-
-- `\summ{expr=f(x), wrt=x, from=a, to=b}` expands to `\sum_{x=a}^{b} f(x)`
-  Both can take an "inf" argument which will output `\int_{\infty}^{\infty}` and `\sum_{\infty}^{\infty}`, respectively,
-  if true
-
-- `\deriv{wrt=x, of=y, n=2}` expands to `\frac{\mathrm{d}^{2}y}{\mathrm{d}x^{2}}`
-
-- `\->` expands to `\rightarrow`, `\=>` expands to `\Rightarrow`, `\<=>` expands to `\Leftrightarrow`, etc.
-
-- `\unit{u=mV}` expands to `\,\mathrm{mV}`.
 
 #### Graphviz integration
 
@@ -57,7 +64,7 @@ Options could be provided to determine whether the graph should be rendered with
 
 ```latex
 \begin{piecewise}{y(x) = }
-\piece{0, -\infty \leq x \leq 0}
+\piece{0, -\infty <= x <= 0}
 \piece{2x, x > 0}
 \end{piecewise}
 ```
@@ -80,13 +87,16 @@ To compile SemTeX:
 
 ### Why?
 
-I take notes in class using Vim and LaTeX and wanted to speed up the process.
+I take notes using Vim and LaTeX and wanted to speed up the process.
 
 ### Why not [Vim-LaTeX](http://vim-latex.sourceforge.net/)? Why not make a LaTeX package?
 
 Some things such as the simple search and replace macros (e.g. `\unit{V}` to `\,\mathrm{V}`) could easily be done either
 as an addition to Vim-LaTeX or in a LaTeX package. However, some of the other planned features (such as automatic paren
-resizing, etc.) would be rather difficult to do in either of these environments.
+resizing, macros with options etc.) would be rather difficult to do in either of these environments.
+
+Additionally, it is the hope that some SemTeX macros and replacements are easier to read through than their LaTeX
+equivalents (for example, `here <-- there` versus `here \leftarrow there`).
 
 ## License (zlib license)
 
