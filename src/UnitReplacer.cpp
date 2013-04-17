@@ -21,7 +21,7 @@ void UnitReplacer::replace(const std::string& matchedKey, Parser& p)
 		argList = p.parseBracketArgs();
 	}
 	catch (const Exceptions::InvalidInputException& ex) {
-		throw Exceptions::InvalidInputException(ex.message + " in \\integral", __FUNCTION__);
+		throw Exceptions::InvalidInputException(ex.message + " in \\unit", __FUNCTION__);
 	}
 
 	if (options->opts.size() != 0)
