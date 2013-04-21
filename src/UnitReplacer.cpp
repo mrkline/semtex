@@ -25,10 +25,10 @@ void UnitReplacer::replace(const std::string& matchedKey, Parser& p)
 	}
 
 	if (options->opts.size() != 0)
-		p.errorOnLine("\\unit does not take options");
+		p.errorOnLine(matchedKey + " does not take options");
 
 	if (options->flags.size() != 0)
-		p.errorOnLine("\\unit does not take flags");
+		p.errorOnLine(matchedKey + " does not take flags");
 
 	if (argList->size() != 1)
 		p.errorOnLine("Incorrect argument(s) for \\unit, which takes a single argument");

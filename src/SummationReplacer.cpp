@@ -23,21 +23,21 @@ void SummationReplacer::replace(const std::string& matchedKey, Parser& p)
 		argList = p.parseBracketArgs();
 	}
 	catch (const Exceptions::InvalidInputException& ex) {
-		throw Exceptions::InvalidInputException(ex.message + " in \\summation", __FUNCTION__);
+		throw Exceptions::InvalidInputException(ex.message + " in " + matchedKey, __FUNCTION__);
 	}
 
 	if (options->opts.size() != 0)
-		p.errorOnLine("\\summation does not take options");
+		p.errorOnLine(matchedKey + " does not take options\n\t(it only takes the flags \"inf\" and \"mir\")");
 
 	for (const auto& flag : options->flags) {
 		if (acceptedFlags.find(flag) == acceptedFlags.end())
-			p.errorOnLine("Unknown argument \"" + flag + "\" for \\summation");
+			p.errorOnLine("Unknown argument \"" + flag + "\" for " + matchedKey);
 	}
 
 	const size_t numArgs = argList->size();
 
 	if (numArgs > 3)
-		p.errorOnLine("Too many arguments for \\summation");
+		p.errorOnLine("Too many arguments for " + matchedKey);
 
 	bool inf = options->flags.find("inf") != options->flags.end();
 	bool lim = options->flags.find("lim") != options->flags.end();
@@ -51,10 +51,10 @@ void SummationReplacer::replace(const std::string& matchedKey, Parser& p)
 	const std::string* upper = numArgs >= 3 && !argList->at(2).empty() ? &argList->at(2) : nullptr;
 
 	if (mir && upper != nullptr)
-		p.warningOnLine("\\summ is ignoring the \"mirror bounds\" option since two bounds were provided.");
+		p.warningOnLine(matchedKey + " is ignoring the \"mirror bounds\" option since two bounds were provided.");
 
 	if (!mir && inf && upper != nullptr && lower != nullptr)
-		p.warningOnLine("\\summ is ignoring the \"infinity bounds\" option since two bounds were provided.");
+		p.warningOnLine(matchedKey + " is ignoring the \"infinity bounds\" option since two bounds were provided.");
 
 
 	std::string replacement = "\\sum";

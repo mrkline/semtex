@@ -21,22 +21,22 @@ void DerivReplacer::replace(const std::string& matchedKey, Parser& p)
 		argList = p.parseBracketArgs();
 	}
 	catch (const Exceptions::InvalidInputException& ex) {
-		throw Exceptions::InvalidInputException(ex.message + " in \\deriv", __FUNCTION__);
+		throw Exceptions::InvalidInputException(ex.message + " in " + matchedKey, __FUNCTION__);
 	}
 
 	if (options->opts.size() != 0)
-		p.errorOnLine("\\unit does not take options");
+		p.errorOnLine(matchedKey + " does not take options");
 
 	if (options->flags.size() != 0)
-		p.errorOnLine("\\unit does not take flags");
+		p.errorOnLine(matchedKey + " does not take flags");
 
 	const size_t numArgs = argList->size();
 
 	if (numArgs < 1)
-		p.errorOnLine("\\unit needs at least one argument");
+		p.errorOnLine(matchedKey + " needs at least one argument");
 
 	if (numArgs > 3)
-		p.errorOnLine("\\unit only takes one to three arguments");
+		p.errorOnLine(matchedKey + " only takes one to three arguments");
 
 	std::string replacement = "\\frac{\\mathrm{d}";
 

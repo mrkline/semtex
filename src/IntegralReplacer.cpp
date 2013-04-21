@@ -23,11 +23,11 @@ void IntegralReplacer::replace(const std::string& matchedKey, Parser& p)
 		argList = p.parseBracketArgs();
 	}
 	catch (const Exceptions::InvalidInputException& ex) {
-		throw Exceptions::InvalidInputException(ex.message + " in \\integral", __FUNCTION__);
+		throw Exceptions::InvalidInputException(ex.message + " in " + matchedKey, __FUNCTION__);
 	}
 
 	if (options->opts.size() != 0)
-		p.errorOnLine("\\integral does not take options");
+		p.errorOnLine(matchedKey + " does not take options\n\t(it only takes the flags \"inf\" and \"mir\")");
 
 	for (const auto& flag : options->flags) {
 		if (acceptedFlags.find(flag) == acceptedFlags.end())
@@ -37,7 +37,7 @@ void IntegralReplacer::replace(const std::string& matchedKey, Parser& p)
 	const size_t numArgs = argList->size();
 
 	if (numArgs > 4)
-		p.errorOnLine("Too many arguments for \\integral");
+		p.errorOnLine("Too many arguments for " + matchedKey);
 
 	bool inf = options->flags.find("inf") != options->flags.end();
 	bool lim = options->flags.find("lim") != options->flags.end();
@@ -53,10 +53,10 @@ void IntegralReplacer::replace(const std::string& matchedKey, Parser& p)
 	const std::string* upper = numArgs >= 4 && !argList->at(3).empty() ? &argList->at(3) : nullptr;
 
 	if (mir && upper != nullptr)
-		p.warningOnLine("\\integral is ignoring the \"mirror bounds\" option since two bounds were provided.");
+		p.warningOnLine(matchedKey + " is ignoring the \"mirror bounds\" option since two bounds were provided.");
 
 	if (!mir && inf && upper != nullptr && lower != nullptr)
-		p.warningOnLine("\\integral is ignoring the \"infinity bounds\" option since two bounds were provided.");
+		p.warningOnLine(matchedKey +  "is ignoring the \"infinity bounds\" option since two bounds were provided.");
 
 	std::string replacement = "\\int";
 	if ((lower != nullptr || upper != nullptr || inf) && lim)
