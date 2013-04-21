@@ -9,6 +9,7 @@
 #include "IntegralReplacer.hpp"
 #include "SummationReplacer.hpp"
 #include "UnitReplacer.hpp"
+#include "PiecewiseReplacer.hpp"
 // #include "TestReplacer.hpp"
 
 namespace { // Ensure these variables are accessible only within this file.
@@ -24,10 +25,11 @@ namespace { // Ensure these variables are accessible only within this file.
 		SummationReplacer sr;
 		DerivReplacer dr;
 		DirectReplacer ar;
+		PiecewiseReplacer pr;
 		// TestReplacer tr;
 	}
-	std::array<Replacer*, 5> replacers = {{&Replacers::ur, &Replacers::ir, &Replacers::sr, &Replacers::dr,
-	                                       &Replacers::ar}};
+	std::array<Replacer*, 6> replacers = {{&Replacers::ur, &Replacers::ir, &Replacers::sr, &Replacers::dr,
+	                                       &Replacers::ar, &Replacers::pr}};
 }
 
 bool Parser::getStringTruthValue(const std::string& str)

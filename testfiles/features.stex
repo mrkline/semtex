@@ -22,5 +22,14 @@
 	\item[Less than] $<=$
 	\item[Not equals] $!=$
 	\end{description}
+\item[Piecewise fnctions] \hfill
+\[
+	\begin{piecewise}{f(x)}
+	\piece{x + 4}{-\infty <= x <= -2}
+	\piece{2}{-2 <= x <= 2}
+	\piece{-x + 4}{2 <= \infty}
+	\rightbrace
+	\end{piecewise}
+\]
 \end{description}
 

@@ -38,6 +38,15 @@ SemTeX is a preprocessor for LaTeX which intends to make creating LaTeX document
 
 - `\unit{mV}` expands to `\,\mathrm{mV}`.
 
+- Piecewise function definition:
+
+```latex
+\begin{piecewise}{y(x)}
+\piece{0}{-\infty <= x <= 0}
+\piece{2x}{x > 0}
+\end{piecewise}
+```
+
 ### Planned Features
 
 #### Graphviz integration
@@ -59,15 +68,6 @@ Options could be provided to determine whether the graph should be rendered with
 #### Miscellaneous features
 
 - Expand `(` and `)` in math mode to `\left(` `\right)`
-
-- Piecewise function definition:
-
-```latex
-\begin{piecewise}{y(x) = }
-\piece{0, -\infty <= x <= 0}
-\piece{2x, x > 0}
-\end{piecewise}
-```
 
 - Automatically expand vertical space as needed in `array` tables (e.g. if a row contains `\frac`)
 
