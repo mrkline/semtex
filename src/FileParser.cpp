@@ -81,7 +81,7 @@ void processFile(const std::string& file, Context& ctxt)
 			printf("Writing out LaTeX file for %s...\n", file.c_str());
 
 		// Replace the file's extension
-		static boost::regex fext(R"regex((stex|sex)$)regex", boost::regex::optimize);
+		static const boost::regex fext(R"regex((stex|sex)$)regex", boost::regex::optimize);
 		const std::string outname = boost::regex_replace(file, fext, "tex");
 		std::ofstream outfile(outname);
 		if (!outfile.good()) {
@@ -96,7 +96,7 @@ void processFile(const std::string& file, Context& ctxt)
 		else {
 
 			const char* curr = fileBuff.get();
-			std::string mostCommonNewline = p.getMostCommonNewline();
+			const std::string mostCommonNewline = p.getMostCommonNewline();
 			for (auto& r : p.replacements) {
 				// Replace all newlines in replacements with the most commonly found newline in the file,
 				boost::replace_all(r.replaceWith, "\n", mostCommonNewline);
@@ -141,17 +141,19 @@ void Parser::parseLoop(bool createReplacements)
 			// Otherwise try to match it to a mapping
 			else {
 				bool matched = false;
-				bool shouldRecurse = false;
-				int line = currLine;
 				if (createReplacements) { // Don't bother doing search and replace for files we won't modify
+					bool shouldRecurse = false;
+					int line = currLine;
 					const char* endSearch = curr + 1;
+					// Build a string out of the current line in which to search
 					while (endSearch < end && *endSearch != ' ' && *endSearch != '\r' && *endSearch != '\n')
 						++endSearch;
-					std::string toSearch(curr, endSearch);
+					const std::string toSearch(curr, endSearch);
+					// For each replacer, search for its keys at the start of the line
 					for (const auto& r : replacers) {
 						auto it = r->getKeys().lower_bound(toSearch);
 						if (it == r->getKeys().end())
-							continue;
+							continue; // Nothing matched, so continue
 						const auto itLen = it->length();
 
 						 // Don't attempt to match something that ends with characters and is followed by characters
@@ -240,13 +242,13 @@ bool Parser::readNewline()
 void Parser::processInclude()
 {
 	// For printing purposes, etc., determine if it is \include or \input
-	bool isInclude = curr[3] == 'c';
+	const bool isInclude = curr[3] == 'c';
 
 	// Increment curr appropriately
 	curr += isInclude ? kIncludeLen : kInputLen;
 
 	//! Get our args
-	std::unique_ptr<std::vector<std::string>> args;
+	decltype(parseBracketArgs()) args;
 	try {
 		args = parseBracketArgs();
 	}
@@ -256,7 +258,7 @@ void Parser::processInclude()
 
 	// We should only have one arg
 	if (args->size() != 1) {
-		errorOnLine("\\include and \\input only take a single, unnamed argument");
+		errorOnLine("\\include and \\input only take a single argument");
 	}
 
 	const std::string& filename = (*args)[0];
@@ -270,6 +272,9 @@ void Parser::processInclude()
 
 			ctxt.queue.enqueue(std::move(fullName));
 		}
+		else {
+			warningOnLine("Ignoring \\include or \\import for a file that cannot be found");
+		}
 	}
 }
 
@@ -277,16 +282,17 @@ std::unique_ptr<MacroOptions> Parser::parseMacroOptions() {
 	// Regex for matching args
 
 	// An unquoted, unnamed arg, such as [ myArg ]
-	static boost::regex unquoted(R"regex(^\s*([^"=,\]]*\s*[^"=,\]\s]+)\s*(,|\])?)regex", boost::regex::optimize);
+	static const boost::regex unquoted(R"regex(^\s*([^"=,\]]*\s*[^"=,\]\s]+)\s*(,|\])?)regex", boost::regex::optimize);
 	// A quoted, unnamed arg, such as [ "myArg" ]
-	static boost::regex quoted(R"regex(^\s*"([^"]+)"\s*(,|\])?)regex", boost::regex::optimize);
+	static const boost::regex quoted(R"regex(^\s*"([^"]+)"\s*(,|\])?)regex", boost::regex::optimize);
 	// An unquoted, named arg, sugh as [ foo = bar ]
-	static boost::regex unquotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*([^"=,\]]*\s*[^"=,\]\s]+)\s*(,|\])?)regex",
-	                                  boost::regex::optimize);
+	static const boost::regex unquotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*([^"=,\]]*\s*[^"=,\]\s]+)\s*(,|\])?)regex",
+	                                        boost::regex::optimize);
 	// A quoted, named arg, sugh as [ foo = "bar" ]
-	static boost::regex quotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*"([^"]+)"\s*(,|\])?)regex", boost::regex::optimize);
+	static const boost::regex quotedNamed(R"regex(^\s*([a-zA-Z]+)\s*=\s*"([^"]+)"\s*(,|\])?)regex",
+	                                      boost::regex::optimize);
 	// A comma, separating args
-	static boost::regex spacedComma(R"regex(^\s*,\s*)regex", boost::regex::optimize);
+	static const boost::regex spacedComma(R"regex(^\s*,\s*)regex", boost::regex::optimize);
 
 	std::unique_ptr<MacroOptions> ret(new MacroOptions);
 
@@ -304,13 +310,11 @@ std::unique_ptr<MacroOptions> Parser::parseMacroOptions() {
 	bool needsCommaNext = false;
 	bool lastTokenWasComma = false;
 	while (true) {
-		eatWhitespace();
-		if (readNewline()) {
-			eatWhitespace();
-			// We cannot have two newlines in a row during an option list. Make sure we don't get another
-			if (readNewline())
-				errorOnLine("A new paragraph was found in the middle of the options list");
-		}
+		readToNextLineText();
+		// We cannot have two newlines in a row during an option list. Make sure we don't get another
+		if (readNewline())
+			errorOnLine("A new paragraph was found in the middle of the options list");
+
 		// Prepare the string to pass to regex (the current line)
 		const char* argEnd = curr + 1;
 		while(argEnd <= end && *argEnd != '\r' && *argEnd != '\n')

@@ -78,7 +78,7 @@ public:
 	void readToNextLineText()
 	{
 		eatWhitespace();
-		// Accept one newline and more whitespace, then demand a [
+		// Accept one newline and more whitespace
 		if (readNewline()) {
 			eatWhitespace();
 		}
