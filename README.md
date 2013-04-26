@@ -2,13 +2,13 @@
 
 ## What is it?
 
-SemTeX is a preprocessor for LaTeX which intends to make creating LaTeX documents simpler and faster.
+SemTeX is a preprocessor for LaTeX aimed at simplifying LaTeX syntax and making documents easier to type.
 
 ### Syntax
 
 - SemTeX generally accepts macros in the form of `\macroname{arg1}{arg2}`. This is to keep SemTeX from looking out
   of place alongside normal LaTeX.
-- Arguments can be nested contain characters like `{`, `}`
+- Arguments can be nested (in most cases - some do not allow nesting).
 - Some macros have options that can be set. For example, the macro to create an integral `\integral`, has an `inf`
   option that fills in the bounds with infinity.
   (i.e. `\integral[inf]{f(x)}{x}` becomes `\int_{-\infty}^{\infty} ...`)
@@ -17,7 +17,7 @@ SemTeX is a preprocessor for LaTeX which intends to make creating LaTeX document
 
 #### Basic Replacements
 
-- `-->` expands to `\rightarrow`, `==>` expands to `\Rightarrow`, `\<==>` expands to `\Leftrightarrow`, etc.
+- `-->` expands to `\rightarrow`, `==>` expands to `\Rightarrow`, `<==>` expands to `\Leftrightarrow`, etc.
 
 - `!=` expands to `\neq`, `>=` expands to `\geq`, `<=` expands to `\leq`, etc.
 
@@ -77,7 +77,7 @@ To run SemTeX:
 - LaTeX (specifically pdflatex)
 - LaTeX math packages (usually provided by the `texlive-extra` package)
 
-To compile SemTeX:
+To build SemTeX:
 - A compiler that supports (a good chunk of) C++11
 - [Boost](http://www.boost.org/) (used for `boost::regex` and `boost::filesystem`).
   I planned on using `std::regex` but gcc has yet to provide a working implementation.
