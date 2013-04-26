@@ -52,7 +52,7 @@ void PiecewiseReplacer::replace(const std::string& matchedKey, Parser& p)
 
 	while (true) {
 		p.readToNextLineText();
-		if (p.curr >= p.end)
+		if (p.curr >= p.end || std::distance(p.curr, p.end) <= (int)pieceKey.length())
 			p.errorOnLine("End of file reached before reaching end of \"piecewise\" definition");
 
 		if (strncmp(p.curr, endKey.c_str(), endKey.length()) == 0) {

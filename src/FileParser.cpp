@@ -151,7 +151,7 @@ void Parser::parseLoop(bool createReplacements)
 					for (const auto& r : replacers) {
 						auto it = r->getKeys().lower_bound(toSearch);
 						if (it == r->getKeys().end())
-							--it;
+							continue;
 						const auto itLen = it->length();
 
 						 // Don't attempt to match something that ends with characters and is followed by characters
