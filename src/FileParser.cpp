@@ -263,6 +263,7 @@ void Parser::processInclude()
 
 	const std::string& filename = (*args)[0];
 
+	bool found = false;
 	for (const auto& ext : extensions) {
 		std::string fullName = filename + ext;
 		using namespace boost::filesystem;
@@ -271,11 +272,11 @@ void Parser::processInclude()
 				printf("Adding %s to the list of files to be processed\n", fullName.c_str());
 
 			ctxt.queue.enqueue(std::move(fullName));
-		}
-		else {
-			warningOnLine("Ignoring \\include or \\import for a file that cannot be found");
+			found = true;
 		}
 	}
+	if (!found)
+		warningOnLine("Ignoring \\include or \\import for a file that cannot be found");
 }
 
 std::unique_ptr<MacroOptions> Parser::parseMacroOptions() {
